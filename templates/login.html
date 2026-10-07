@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}ورود / ثبت‌نام | کلینیک ماهلین{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto bg-white p-10 rounded-3xl shadow-xl border border-gray-100 mt-20 text-center">
+    <h2 class="text-2xl font-black text-navy mb-2">ورود به سیستم نوبت‌دهی</h2>
+    <p class="text-gray-500 mb-8 text-sm">لطفاً شماره موبایل خود را وارد کنید</p>
+    <form method="POST">
+        {% csrf_token %}
+        <input type="text" name="phone" placeholder="مثال: 09123456789" class="w-full p-4 border border-gray-200 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none mb-6 text-center" dir="ltr" required>
+        <button type="submit" class="w-full bg-primary text-white py-4 rounded-xl font-bold hover:bg-teal-600 transition shadow-lg">دریافت کد تایید</button>
+    </form>
+</div>
+{% endblock %}

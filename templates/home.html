@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+
+{% block title %}صفحه اصلی | کلینیک ماهلین{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 relative">
+    
+    <div class="mt-8 bg-navy text-white rounded-[2.5rem] p-10 md:p-20 text-center shadow-2xl relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-primary rounded-full opacity-20 blur-3xl -mr-20 -mt-20"></div>
+        <div class="absolute bottom-0 left-0 w-64 h-64 bg-action rounded-full opacity-20 blur-3xl -ml-20 -mb-20"></div>
+        <div class="relative z-10">
+            <h1 class="text-4xl md:text-6xl font-black mb-6 leading-tight">لبخند زیبا،<br>تخصص و هنر ماست</h1>
+            <p class="text-lg md:text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
+                بهترین خدمات دندانپزشکی را با کادری مجرب، تجهیزات مدرن و محیطی آرام در کلینیک ماهلین تجربه کنید.
+            </p>
+            <div class="flex justify-center gap-4">
+                <a href="{% url 'book' %}" class="bg-action text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-orange-500 transition shadow-lg">رزرو آنلاین نوبت</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- بخش خدمات (کارت‌ها حالا دکمه شدن و با کلیک پاپ‌آپ باز میشه) -->
+    <section id="services" class="mt-24">
+        <h2 class="text-3xl font-black text-navy text-center mb-12">خدمات تخصصی ماهلین</h2>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            
+            <div onclick="openModal('modal-implant')" class="cursor-pointer bg-white p-6 rounded-3xl shadow-sm border border-gray-100 text-center hover:shadow-lg hover:-translate-y-2 transition transform duration-300">
+                <div class="w-16 h-16 bg-blue-50 text-primary rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">🦷</div>
+                <h3 class="font-bold text-lg mb-2">ایمپلنت دندان</h3>
+                <p class="text-gray-500 text-sm">کلیک کنید برای مشاهده جزئیات و مراقبت‌ها</p>
+            </div>
+            
+            <div onclick="openModal('modal-smile')" class="cursor-pointer bg-white p-6 rounded-3xl shadow-sm border border-gray-100 text-center hover:shadow-lg hover:-translate-y-2 transition transform duration-300">
+                <div class="w-16 h-16 bg-blue-50 text-primary rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">✨</div>
+                <h3 class="font-bold text-lg mb-2">اصلاح طرح لبخند</h3>
+                <p class="text-gray-500 text-sm">کلیک کنید برای مشاهده جزئیات و مراقبت‌ها</p>
+            </div>
+            
+            <div onclick="openModal('modal-endo')" class="cursor-pointer bg-white p-6 rounded-3xl shadow-sm border border-gray-100 text-center hover:shadow-lg hover:-translate-y-2 transition transform duration-300">
+                <div class="w-16 h-16 bg-blue-50 text-primary rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">⚡</div>
+                <h3 class="font-bold text-lg mb-2">عصب کشی تخصصی</h3>
+                <p class="text-gray-500 text-sm">کلیک کنید برای مشاهده جزئیات و مراقبت‌ها</p>
+            </div>
+            
+            <div onclick="openModal('modal-pediatric')" class="cursor-pointer bg-white p-6 rounded-3xl shadow-sm border border-gray-100 text-center hover:shadow-lg hover:-translate-y-2 transition transform duration-300">
+                <div class="w-16 h-16 bg-blue-50 text-primary rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">🧸</div>
+                <h3 class="font-bold text-lg mb-2">دندانپزشکی اطفال</h3>
+                <p class="text-gray-500 text-sm">کلیک کنید برای مشاهده جزئیات و مراقبت‌ها</p>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- بخش پزشکان -->
+    <section id="doctors" class="mt-24 bg-gray-100 rounded-[2.5rem] p-10 md:p-14">
+        <h2 class="text-3xl font-black text-navy text-center mb-12">پزشکان متخصص ما</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+            {% for doctor in doctors %}
+                <div class="bg-white rounded-3xl p-6 text-center shadow-sm border border-gray-100 hover:-translate-y-2 transition transform duration-300">
+                    {% if doctor.profile_image %}
+                        <img src="{{ doctor.profile_image.url }}" alt="{{ doctor.name }}" class="w-32 h-32 mx-auto rounded-full object-cover border-4 border-gray-50 mb-4 shadow-sm">
+                    {% else %}
+                        <div class="w-32 h-32 mx-auto rounded-full bg-gray-50 flex items-center justify-center text-gray-300 border-4 border-white mb-4 shadow-sm">
+                            <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                        </div>
+                    {% endif %}
+                    <h3 class="text-xl font-bold text-navy">دکتر {{ doctor.name }}</h3>
+                    <p class="text-primary font-medium mt-1 text-sm">{{ doctor.specialty }}</p>
+                    <a href="{% url 'book' %}" class="mt-5 inline-block w-full bg-blue-50 text-blue-600 px-4 py-3 rounded-xl font-bold text-sm hover:bg-blue-100 transition">رزرو نوبت با ایشان</a>
+                </div>
+            {% empty %}
+                <p class="text-center text-gray-500 col-span-full">در حال حاضر پزشکی در سیستم ثبت نشده است.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- بخش درباره کلینیک و اصلاح آدرس -->
+    <section id="about" class="mt-24 mb-10 flex flex-col md:flex-row items-center gap-10">
+        <div class="md:w-1/2">
+            <h2 class="text-3xl font-black text-navy mb-6">درباره کلینیک ماهلین</h2>
+            <p class="text-gray-600 leading-relaxed mb-4 text-justify">
+                کلینیک تخصصی دندانپزشکی ماهلین با هدف ارائه خدمات نوین و با کیفیت در فضایی آرامش‌بخش تاسیس شده است.
+            </p>
+        </div>
+        <div class="md:w-1/2 bg-primary/10 rounded-[2.5rem] p-10 text-center w-full">
+            <div class="text-5xl mb-4">🏥</div>
+            <h3 class="text-2xl font-black text-navy mb-2">اطلاعات تماس</h3>
+            <p class="text-gray-600 font-bold mb-2 mt-4">تلفن: <span dir="ltr">09123456789</span></p>
+            <!-- آدرس رو اینجا ویرایش کن: -->
+            <p class="text-gray-800 font-bold bg-white p-3 rounded-xl inline-block shadow-sm">آدرس: خیابان اصلی، کوچه پزشکان، پلاک ۱، کلینیک ماهلین</p>
+        </div>
+    </section>
+
+    <!-- ==================== کدهای مربوط به پاپ‌آپ‌ها (Modals) ==================== -->
+    
+    <!-- پاپ‌آپ ایمپلنت -->
+    <div id="modal-implant" class="hidden fixed inset-0 bg-black bg-opacity-60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl p-8 max-w-lg w-full relative">
+            <button onclick="closeModal('modal-implant')" class="absolute top-4 left-4 text-gray-400 hover:text-red-500"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            <h3 class="text-2xl font-black text-navy mb-4 text-center border-b pb-4">🦷 ایمپلنت دندان</h3>
+            <div class="space-y-4 text-gray-600 text-sm leading-relaxed">
+                <p><strong class="text-primary">توضیحات:</strong> ایمپلنت بهترین جایگزین برای دندان‌های از دست رفته است. پایه‌ای از جنس تیتانیوم در فک کاشته شده و روکش روی آن قرار می‌گیرد.</p>
+                <p><strong class="text-primary">مراقبت‌های بعد از کاشت:</strong></p>
+                <ul class="list-disc list-inside space-y-1">
+                    <li>تا ۲۴ ساعت از نوشیدن مایعات گرم خودداری کنید.</li>
+                    <li>استعمال دخانیات تا ۴۸ ساعت ممنوع است.</li>
+                    <li>از روز دوم، روزی ۳ بار با دهانشویه تجویز شده شستشو دهید.</li>
+                    <li>از جویدن غذاهای سفت با ناحیه ایمپلنت شده پرهیز کنید.</li>
+                </ul>
+            </div>
+            <a href="{% url 'book' %}" class="mt-6 block text-center bg-action text-white py-3 rounded-xl font-bold hover:bg-orange-500 transition">همین الان نوبت بگیرید</a>
+        </div>
+    </div>
+
+    <!-- پاپ‌آپ طرح لبخند -->
+    <div id="modal-smile" class="hidden fixed inset-0 bg-black bg-opacity-60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl p-8 max-w-lg w-full relative">
+            <button onclick="closeModal('modal-smile')" class="absolute top-4 left-4 text-gray-400 hover:text-red-500"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            <h3 class="text-2xl font-black text-navy mb-4 text-center border-b pb-4">✨ اصلاح طرح لبخند</h3>
+            <div class="space-y-4 text-gray-600 text-sm leading-relaxed">
+                <p><strong class="text-primary">توضیحات:</strong> استفاده از ونیر کامپوزیت و لمینت سرامیکی برای رفع بدرنگی، فاصله و نامرتبی دندان‌ها.</p>
+                <p><strong class="text-primary">مراقبت‌ها:</strong></p>
+                <ul class="list-disc list-inside space-y-1">
+                    <li>شکستن اجسام سخت (مثل تخمه یا یخ) اکیداً ممنوع است.</li>
+                    <li>مصرف چای، قهوه و نوشابه‌های رنگی را به حداقل برسانید.</li>
+                    <li>استفاده منظم از نخ دندان ضروری است.</li>
+                    <li>در صورت دندان‌قروچه، استفاده از نایت‌گارد در شب الزامی است.</li>
+                </ul>
+            </div>
+            <a href="{% url 'book' %}" class="mt-6 block text-center bg-action text-white py-3 rounded-xl font-bold hover:bg-orange-500 transition">همین الان نوبت بگیرید</a>
+        </div>
+    </div>
+
+    <!-- پاپ‌آپ عصب کشی -->
+    <div id="modal-endo" class="hidden fixed inset-0 bg-black bg-opacity-60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl p-8 max-w-lg w-full relative">
+            <button onclick="closeModal('modal-endo')" class="absolute top-4 left-4 text-gray-400 hover:text-red-500"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            <h3 class="text-2xl font-black text-navy mb-4 text-center border-b pb-4">⚡ عصب کشی تخصصی</h3>
+            <div class="space-y-4 text-gray-600 text-sm leading-relaxed">
+                <p><strong class="text-primary">توضیحات:</strong> تخلیه بافت عفونی ریشه دندان با دستگاه‌های پیشرفته روتاری و پر کردن کانال‌ها جهت حفظ دندان طبیعی.</p>
+                <p><strong class="text-primary">مراقبت‌های بعد از درمان:</strong></p>
+                <ul class="list-disc list-inside space-y-1">
+                    <li>تا زمان برطرف شدن کامل بی‌حسی، از جویدن غذا خودداری کنید.</li>
+                    <li>درد خفیف تا چند روز طبیعی است؛ مسکن‌های تجویز شده را مصرف کنید.</li>
+                    <li>تا زمان قرار دادن روکش دائم، با آن سمت غذاهای سفت نجوید.</li>
+                </ul>
+            </div>
+            <a href="{% url 'book' %}" class="mt-6 block text-center bg-action text-white py-3 rounded-xl font-bold hover:bg-orange-500 transition">همین الان نوبت بگیرید</a>
+        </div>
+    </div>
+
+    <!-- پاپ‌آپ اطفال -->
+    <div id="modal-pediatric" class="hidden fixed inset-0 bg-black bg-opacity-60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl p-8 max-w-lg w-full relative">
+            <button onclick="closeModal('modal-pediatric')" class="absolute top-4 left-4 text-gray-400 hover:text-red-500"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            <h3 class="text-2xl font-black text-navy mb-4 text-center border-b pb-4">🧸 دندانپزشکی اطفال</h3>
+            <div class="space-y-4 text-gray-600 text-sm leading-relaxed">
+                <p><strong class="text-primary">توضیحات:</strong> پیشگیری و درمان پوسیدگی دندان کودکان شامل فلورایدتراپی، فیشورسیلانت و ترمیم در محیطی شاد و بدون استرس.</p>
+                <p><strong class="text-primary">مراقبت‌ها و توصیه‌ها:</strong></p>
+                <ul class="list-disc list-inside space-y-1">
+                    <li>به کودک در مورد آمپول یا درد هشدار ندهید تا دچار استرس نشود.</li>
+                    <li>پس از فلورایدتراپی، کودک تا ۲ ساعت نباید چیزی بخورد یا بیاشامد.</li>
+                    <li>مسواک زدن کودکان زیر ۷ سال باید با نظارت و کمک والدین انجام شود.</li>
+                </ul>
+            </div>
+            <a href="{% url 'book' %}" class="mt-6 block text-center bg-action text-white py-3 rounded-xl font-bold hover:bg-orange-500 transition">همین الان نوبت بگیرید</a>
+        </div>
+    </div>
+
+</div>
+
+<!-- اسکریپت باز و بسته کردن پاپ‌آپ‌ها -->
+<script>
+    function openModal(id) {
+        document.getElementById(id).classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; // جلوگیری از اسکرول شدن صفحه پشتی
+    }
+    function closeModal(id) {
+        document.getElementById(id).classList.add('hidden');
+        document.body.style.overflow = 'auto'; // برگرداندن قابلیت اسکرول
+    }
+</script>
+{% endblock %}

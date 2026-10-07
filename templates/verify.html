@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}تایید شماره | کلینیک ماهلین{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto bg-white p-10 rounded-3xl shadow-xl border border-gray-100 mt-20 text-center relative overflow-hidden">
+    <div class="absolute top-0 right-0 w-32 h-32 bg-primary rounded-full opacity-10 blur-2xl -mr-10 -mt-10"></div>
+    
+    <div class="relative z-10">
+        <h2 class="text-2xl font-black text-navy mb-2">تایید شماره موبایل</h2>
+        <p class="text-gray-500 mb-6 text-sm">کد پیامک شده به شماره <span dir="ltr" class="font-bold text-primary">{{ phone }}</span> را وارد کنید.</p>
+        
+        {% if error %}
+        <div class="bg-red-50 text-red-500 p-3 rounded-lg mb-4 text-sm font-bold border border-red-100">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" id="verify-form">
+            {% csrf_token %}
+            <input type="text" name="code" placeholder="- - - - -" class="w-full p-4 border border-gray-200 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-none mb-4 text-center text-2xl tracking-widest" dir="ltr" required>
+            
+            <div id="timer-box" class="text-sm font-bold text-gray-500 mb-6">
+                زمان باقی‌مانده: <span id="timer" class="text-action text-lg" dir="ltr">02:00</span>
+            </div>
+            
+            <a href="{% url 'login' %}" id="resend-btn" class="hidden text-sm font-bold text-primary hover:text-teal-700 mb-6 block transition">
+                <svg class="w-4 h-4 inline-block ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                درخواست مجدد کد تایید
+            </a>
+
+            <button type="submit" id="submit-btn" class="w-full bg-action text-white py-4 rounded-xl font-bold hover:bg-orange-500 transition shadow-lg">تایید و ورود</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    let timeLeft = 120;
+    const timerElement = document.getElementById("timer");
+    const timerBox = document.getElementById("timer-box");
+    const resendBtn = document.getElementById("resend-btn");
+
+    const countdown = setInterval(() => {
+        if (timeLeft <= 0) {
+            clearInterval(countdown);
+            timerBox.classList.add("hidden");
+            resendBtn.classList.remove("hidden");
+        } else {
+            let minutes = Math.floor(timeLeft / 60);
+            let seconds = timeLeft % 60;
+            timerElement.innerText = `0${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            timeLeft -= 1;
+        }
+    }, 1000);
+</script>
+{% endblock %}

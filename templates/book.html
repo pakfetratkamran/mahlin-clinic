@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}رزرو نوبت | کلینیک ماهلین{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="https://unpkg.com/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
+<div class="max-w-2xl mx-auto bg-white p-10 rounded-3xl shadow-xl border border-gray-100 mt-10 relative overflow-hidden">
+    <div class="absolute top-0 right-0 w-32 h-32 bg-primary rounded-full opacity-10 -mr-10 -mt-10 blur-2xl"></div>
+    <div class="relative z-10">
+        <h2 class="text-3xl font-black text-navy mb-2 text-center">رزرو آنلاین نوبت معاینه</h2>
+        <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-8 flex justify-between items-center">
+            <span class="text-navy font-bold text-sm flex items-center gap-2"><svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>شماره تایید شده: {{ request.user.username }}</span>
+            <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-black">✓ حساب فعال</span>
+        </div>
+        <form method="POST" id="bookingForm" class="space-y-2">
+            {% csrf_token %}
+            {% for field in form %}
+                <div>
+                    <label class="block text-navy font-bold mb-2 text-sm">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<div class="bg-red-50 text-red-600 p-3 rounded-lg mt-2 text-sm font-bold border border-red-100">{{ field.errors.0 }}</div>{% endif %}
+                </div>
+            {% endfor %}
+            <button type="submit" id="submitBtn" class="w-full bg-action text-white py-4 rounded-xl font-bold text-lg hover:bg-orange-500 transition duration-300 shadow-lg mt-6 flex justify-center items-center h-16">
+                <span id="btnText">تایید نهایی و ثبت رزرو</span>
+                <svg id="btnSpinner" class="hidden animate-spin w-8 h-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            </button>
+        </form>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://unpkg.com/persian-date@1.1.0/dist/persian-date.min.js"></script>
+<script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+<script>
+    document.getElementById('bookingForm').addEventListener('submit', function() {
+        document.getElementById('btnText').classList.add('hidden');
+        document.getElementById('btnSpinner').classList.remove('hidden');
+        document.getElementById('submitBtn').classList.add('opacity-75', 'cursor-not-allowed');
+    });
+
+    $(document).ready(function() {
+        $('.jalali-datepicker').persianDatepicker({
+            format: 'YYYY/MM/DD', initialValue: false, autoClose: true, minDate: new persianDate().valueOf(),
+            toolbox: { calendarSwitch: { enabled: false } },
+            dayPicker: {
+                onSelect: function(unix) {
+                    var date = new persianDate(unix);
+                    if(date.day() === 7) { alert('روز جمعه تعطیل است.'); $('.jalali-datepicker').val(''); }
+                }
+            }
+        });
+    });
+</script>
+<style>
+    .datepicker-plot-area { border-radius: 16px !important; border: none !important; box-shadow: 0 15px 40px rgba(0,0,0,0.15) !important; font-family: 'Vazirmatn', sans-serif !important; padding: 15px !important;}
+    .datepicker-plot-area .datepicker-day-view .table-days td.today span { background-color: #1FA7B5 !important; color: white !important; }
+    .datepicker-plot-area .datepicker-day-view .table-days td.selected span { background-color: #12303F !important; color: white !important; }
+    .datepicker-plot-area .datepicker-day-view .table-days td.friday span { color: #EF4444 !important; background-color: #FEE2E2 !important; font-weight: 900 !important; }
+</style>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}پنل کاربری | کلینیک ماهلین{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto mt-10">
+    <!-- هدر داشبورد -->
+    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-8 flex justify-between items-center">
+        <div>
+            <h2 class="text-2xl font-black text-navy">پنل کاربری من</h2>
+            <p class="text-gray-500 text-sm mt-1">شماره حساب: <span dir="ltr">{{ request.user.username }}</span></p>
+        </div>
+        <a href="{% url 'book' %}" class="bg-primary text-white px-6 py-3 rounded-xl font-bold hover:bg-teal-600 transition shadow-md flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            دریافت نوبت جدید
+        </a>
+    </div>
+
+    <!-- لیست نوبت‌ها -->
+    <h3 class="text-xl font-bold text-navy mb-4">نوبت‌های رزرو شده</h3>
+    
+    <div class="space-y-4">
+        {% for appt in appointments %}
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:shadow-md transition">
+                
+                <!-- اطلاعات دکتر و زمان -->
+                <div class="flex items-center gap-4">
+                    {% if appt.doctor.profile_image %}
+                        <img src="{{ appt.doctor.profile_image.url }}" alt="Doctor" class="w-16 h-16 rounded-full object-cover border-2 border-gray-100">
+                    {% else %}
+                        <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                        </div>
+                    {% endif %}
+                    
+                    <div>
+                        <h4 class="font-bold text-lg text-navy">دکتر {{ appt.doctor.name }}</h4>
+                        <p class="text-gray-500 text-sm">{{ appt.doctor.specialty }}</p>
+                        <div class="flex items-center gap-3 mt-2 text-sm font-medium text-gray-700">
+                            <span class="flex items-center gap-1"><svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> {{ appt.jalali_date }}</span>
+                            <span class="flex items-center gap-1"><svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> ساعت {{ appt.time }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- وضعیت و دکمه لغو -->
+                <div class="flex flex-col items-end gap-3 w-full md:w-auto mt-4 md:mt-0">
+                    {% if appt.is_confirmed %}
+                        <span class="bg-green-100 text-green-700 px-4 py-2 rounded-lg text-sm font-bold w-full md:w-auto text-center border border-green-200">تایید شده</span>
+                    {% else %}
+                        <span class="bg-orange-100 text-orange-600 px-4 py-2 rounded-lg text-sm font-bold w-full md:w-auto text-center border border-orange-200">در حال بررسی</span>
+                    {% endif %}
+                    
+                    <!-- دکمه لغو با هشدار جاوا اسکریپت -->
+                    <a href="{% url 'cancel_appointment' appt.id %}" onclick="return confirm('آیا از لغو این نوبت اطمینان دارید؟');" class="text-red-500 hover:text-red-700 text-sm font-bold text-center w-full md:w-auto">
+                        لغو نوبت
+                    </a>
+                </div>
+            </div>
+        {% empty %}
+            <!-- حالت خالی بودن لیست -->
+            <div class="bg-gray-50 p-10 rounded-2xl text-center border border-dashed border-gray-300">
+                <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                <h4 class="text-gray-500 font-bold text-lg mb-2">شما هنوز نوبتی رزرو نکرده‌اید!</h4>
+                <p class="text-gray-400 text-sm">برای رزرو اولین نوبت خود روی دکمه بالای صفحه کلیک کنید.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

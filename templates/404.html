@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}صفحه پیدا نشد | کلینیک ماهلین{% endblock %}
+{% block content %}
+<div class="min-h-[60vh] flex flex-col items-center justify-center text-center px-4 mt-10">
+    <div class="text-[150px] leading-none font-black text-gray-200 mb-4">404</div>
+    <h2 class="text-3xl font-black text-navy mb-4">ای وای! دندان اشتباهی را کشیدید! 🦷</h2>
+    <p class="text-gray-500 mb-8 max-w-md mx-auto">
+        صفحه‌ای که به دنبال آن بودید در سیستم ماهلین وجود ندارد. ممکن است آدرس را اشتباه تایپ کرده باشید یا صفحه پاک شده باشد.
+    </p>
+    <a href="{% url 'home' %}" class="bg-primary text-white px-8 py-4 rounded-xl font-bold hover:bg-teal-600 transition shadow-lg">
+        بازگشت به صفحه اصلی
+    </a>
+</div>
+{% endblock %}
