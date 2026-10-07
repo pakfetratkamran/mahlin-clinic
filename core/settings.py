@@ -79,3 +79,5 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+ALLOWED_HOSTS = ['*']
+CSRF_TRUSTED_ORIGINS = ['https://mahlin-clinic-production.up.railway.app']
