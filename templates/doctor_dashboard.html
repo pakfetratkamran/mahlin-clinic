@@ -1,37 +1,230 @@
 {% extends 'base.html' %}
-{% block title %}پنل پزشک | کلینیک ماهلین{% endblock %}
-{% block content %}
-<div class="max-w-5xl mx-auto mt-10 px-4">
-    <div class="bg-navy text-white p-8 rounded-3xl shadow-lg mb-8 flex justify-between items-center relative overflow-hidden">
-        <div class="absolute right-0 top-0 w-40 h-40 bg-white opacity-5 rounded-full -mr-10 -mt-10"></div>
-        <div class="relative z-10">
-            <h2 class="text-3xl font-black mb-2">سلام، دکتر {{ doctor.name }} 👋</h2>
-            <p class="text-gray-300">امروز <span class="font-bold text-action bg-white/10 px-3 py-1 rounded-lg">{{ today }}</span> است. در این صفحه لیست بیماران امروز خود را مشاهده می‌کنید.</p>
-        </div>
-    </div>
 
-    <h3 class="text-xl font-bold text-navy mb-4 border-r-4 border-primary pr-3">لیست نوبت‌های امروز شما</h3>
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {% for appt in appointments %}
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition flex justify-between items-center">
+{% block title %}پنل اختصاصی پزشک | {{ doctor.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* کارت‌های رنگی پاستلی مشابه عکس پنل پزشک */
+    .action-card-green {
+        background: linear-gradient(135deg, #bbf7d0, #86efac);
+        border-radius: 26px;
+        padding: 22px;
+        color: #064e3b;
+        position: relative;
+    }
+    .action-card-purple {
+        background: linear-gradient(135deg, #ddd6fe, #c4b5fd);
+        border-radius: 26px;
+        padding: 22px;
+        color: #2e1065;
+        position: relative;
+    }
+
+    /* نوار تقویم هفتگی لمسی */
+    .week-strip {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        overflow-x: auto;
+        padding-bottom: 6px;
+    }
+    .day-pill {
+        flex: 1;
+        min-width: 54px;
+        text-align: center;
+        padding: 12px 6px;
+        border-radius: 18px;
+        text-decoration: none;
+        color: #64748b;
+        background: #f8fafc;
+        transition: all 0.2s;
+    }
+    .day-pill.active {
+        background: #e2e8f0;
+        color: #0f172a;
+        font-weight: bold;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+    }
+
+    /* تایم‌لاین نوبت‌ها */
+    .timeline-row {
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+        margin-bottom: 16px;
+    }
+    .timeline-time {
+        min-width: 52px;
+        font-weight: 700;
+        font-size: 0.88rem;
+        color: #0f172a;
+        padding-top: 14px;
+    }
+    .timeline-card {
+        flex: 1;
+        background: #f8fafc;
+        border-radius: 22px;
+        padding: 16px;
+        border: 1px solid #e2e8f0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    <!-- ستون اول: آمار پزشک و کارت‌های عملیاتی (مشابه سمت چپ عکس) -->
+    <div class="col-12 col-lg-5">
+        <div class="app-card mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
-                    <h4 class="font-bold text-lg text-navy mb-1">{{ appt.patient.name }}</h4>
-                    <p class="text-gray-500 text-sm">شماره تماس: <span dir="ltr">{{ appt.patient.phone }}</span></p>
-                    <p class="text-gray-500 text-sm">کد ملی: <span dir="ltr">{{ appt.patient.national_id }}</span></p>
+                    <h2 class="fw-bold display-5 mb-0">{{ appointments|length }}</h2>
+                    <span class="text-muted small">نوبت‌های این روز ({{ today }})</span>
                 </div>
-                <div class="text-center">
-                    <div class="bg-blue-50 text-primary font-black text-xl px-4 py-3 rounded-xl border border-blue-100">
-                        ساعت {{ appt.time }}
+                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2">
+                    <i class="fa-solid fa-user-doctor ms-1"></i> {{ doctor.name }}
+                </span>
+            </div>
+
+            <!-- دو کارت رنگی (ثبت مرخصی و وضعیت پرونده‌ها) -->
+            <div class="row g-3 mt-1">
+                <div class="col-6">
+                    <div class="action-card-green h-100 d-flex flex-column justify-content-between">
+                        <div class="icon-circle-white mb-3">
+                            <i class="fa-solid fa-pen"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-1">ثبت یادداشت</h6>
+                            <small class="d-block opacity-75" style="font-size: 0.75rem;">پرونده درمانی بیمار</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="action-card-purple h-100 d-flex flex-column justify-content-between" data-bs-toggle="modal" data-bs-target="#leaveModal" style="cursor: pointer;">
+                        <div class="icon-circle-white mb-3">
+                            <i class="fa-solid fa-calendar-xmark"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-1">اعلام مرخصی</h6>
+                            <small class="d-block opacity-75" style="font-size: 0.75rem;">بستن نوبت‌دهی روز</small>
+                        </div>
                     </div>
                 </div>
             </div>
-        {% empty %}
-            <div class="col-span-full bg-gray-50 p-10 rounded-2xl text-center border border-dashed border-gray-300">
-                <span class="text-5xl mb-4 block">☕</span>
-                <h4 class="text-gray-500 font-bold text-lg">برای امروز نوبتی ثبت نشده است!</h4>
+
+            <!-- آمار کلی عملکرد پزشک -->
+            <hr class="my-4 text-muted opacity-25">
+            <h6 class="fw-bold small text-muted mb-3">آمار کلی بیماران</h6>
+            <div class="row text-center">
+                <div class="col-6 border-start">
+                    <div class="fw-bold fs-2">{{ total_appointments }}</div>
+                    <small class="text-muted">کل نوبت‌های ثبت‌شده</small>
+                </div>
+                <div class="col-6">
+                    <div class="fw-bold fs-2 text-info">{{ confirmed_count }}</div>
+                    <small class="text-muted">ویزیت‌های تاییدشده</small>
+                </div>
             </div>
-        {% endfor %}
+        </div>
+    </div>
+
+    <!-- ستون دوم: تقویم هفتگی و تایم‌لاین نوبت‌ها (مشابه سمت راست عکس) -->
+    <div class="col-12 col-lg-7">
+        <div class="app-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0">تقویم حضور و نوبت‌ها</h5>
+                <span class="section-badge mb-0">{{ today }}</span>
+            </div>
+
+            <!-- نوار روزهای هفته -->
+            <div class="week-strip mb-4">
+                {% for d in week_days %}
+                <a href="?date={{ d.gregorian }}" class="day-pill {% if d.is_selected %}active{% endif %}">
+                    <div class="small mb-1" style="font-size: 0.72rem;">{{ d.weekday_name }}</div>
+                    <div class="fs-6">{{ d.day_num }}</div>
+                </a>
+                {% endfor %}
+            </div>
+
+            <!-- لیست تایم‌لاین نوبت‌های روز -->
+            <h6 class="fw-bold mb-3">نوبت‌های روز انتخاب‌شده</h6>
+
+            {% for appt in appointments %}
+            <div class="timeline-row">
+                <div class="timeline-time">{{ appt.time|time:"H:i" }}</div>
+                <div class="timeline-card">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="logo-circle" style="width: 38px; height: 38px;">
+                                <i class="fa-solid fa-user text-info"></i>
+                            </span>
+                            <div>
+                                <div class="fw-bold">{{ appt.patient.name }}</div>
+                                <small class="text-muted">موبایل: {{ appt.patient.phone }} | کدملی: {{ appt.patient.national_id }}</small>
+                            </div>
+                        </div>
+
+                        {% if appt.is_confirmed %}
+                            <span class="badge bg-success rounded-pill"><i class="fa-solid fa-check"></i> تایید شده</span>
+                        {% else %}
+                            <form method="POST" class="m-0">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="confirm_appt">
+                                <input type="hidden" name="appointment_id" value="{{ appt.id }}">
+                                <button type="submit" class="btn btn-sm btn-info text-white rounded-pill px-3">
+                                    تایید نوبت
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+
+                    <!-- ثبت یادداشت درمانی برای بیمار -->
+                    <form method="POST" class="mt-2 d-flex gap-2">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="save_note">
+                        <input type="hidden" name="appointment_id" value="{{ appt.id }}">
+                        <input type="text" name="doctor_note" value="{{ appt.doctor_note|default:'' }}" class="form-control form-control-sm rounded-pill px-3" placeholder="ثبت شرح درمان یا یادداشت پزشکی...">
+                        <button type="submit" class="btn btn-sm btn-dark rounded-pill px-3">ذخیره</button>
+                    </form>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-5 text-muted">
+                <i class="fa-regular fa-calendar-check fs-1 mb-2 text-info opacity-50"></i>
+                <p class="mb-0">برای این تاریخ نوبتی ثبت نشده است.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+
+<!-- مودال ثبت مرخصی پزشک -->
+<div class="modal fade" id="leaveModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0">
+            <div class="modal-header border-0">
+                <h6 class="modal-title fw-bold">ثبت مرخصی و بستن نوبت‌دهی</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_leave">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">تاریخ مرخصی (شمسی یا میلادی)</label>
+                        <input type="text" name="leave_date" class="form-control rounded-3" placeholder="مثلاً: 1405/08/02" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small fw-bold">دلیل عدم حضور</label>
+                        <input type="text" name="reason" class="form-control rounded-3" placeholder="مثلاً: شرکت در سمینار پزشکی">
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="submit" class="btn-pill-dark w-100 justify-content-center">ثبت مرخصی</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 {% endblock %}
