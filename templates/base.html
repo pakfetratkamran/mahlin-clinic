@@ -3,146 +3,360 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <title>{% block title %}کلینیک دندان‌پزشکی ماهلین{% endblock %}</title>
-    <meta name="description" content="{% block meta_description %}کلینیک تخصصی دندان‌پزشکی ماهلین، ایمپلنت و زیبایی با مجهزترین دستگاه‌ها.{% endblock %}">
-    
-    <!-- فونت استاندارد وزیرمتن با کیفیت بالا -->
-    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.0.0/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
-    
+    <title>{% block title %}کلینیک دندان‌پزشکی ماهلین | لبخندی سالم، حسی ماندگار{% endblock %}</title>
+    <meta name="description" content="کلینیک دندان‌پزشکی ماهلین؛ ارائه خدمات تخصصی دندان‌پزشکی در محیطی آرام و حرفه‌ای با امکان رزرو آنلاین نوبت.">
+
+    <!-- بارگذاری فونت وزیرمتن از Google Fonts برای وضوح عالی در لپ‌تاپ و موبایل -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
     <!-- Bootstrap 5.3 RTL -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
-    
     <!-- FontAwesome 6 Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
         :root {
-            --bs-body-font-family: 'Vazirmatn', sans-serif;
-            --primary-color: #0284c7;
-            --secondary-color: #38bdf8;
-            --dark-color: #0f172a;
-            --light-bg: #f8fafc;
+            --mahlin-teal: #117a6f;         /* فیروزه‌ای تیره و لوکس مطابق تصویر */
+            --mahlin-teal-hover: #0d6158;
+            --mahlin-teal-soft: #e6f3f1;    /* فیروزه‌ای بسیار ملایم برای پس‌زمینه کارت‌ها و بج‌ها */
+            --mahlin-bg: #f4f8f7;           /* پس‌زمینه اصلی آرامش‌بخش */
+            --mahlin-navy: #102a43;         /* سرمه‌ای تیره برای تیترها */
+            --mahlin-text: #334e68;         /* رنگ متن اصلی */
+            --mahlin-muted: #627d98;        /* رنگ متون فرعی */
+            --mahlin-border: #d9e6e4;       /* رنگ خطوط و کادرها */
+            --mahlin-white: #ffffff;
+            --radius-lg: 20px;
+            --radius-md: 14px;
         }
 
-        body {
-            font-family: 'Vazirmatn', sans-serif !important;
-            background-color: var(--light-bg);
-            color: var(--dark-color);
-            text-align: right;
+        * {
+            font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
-        /* هدر سایت */
-        .navbar {
-            background-color: #ffffff;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.04);
-            padding: 15px 0;
+        html, body {
+            background-color: var(--mahlin-bg);
+            color: var(--mahlin-text);
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            line-height: 1.75;
         }
-        .navbar-brand {
+
+        @media (max-width: 991.98px) {
+            body {
+                padding-bottom: 84px; /* فضای امن برای نوار رزرو ثابت پایین موبایل */
+            }
+        }
+
+        /* هدر کلینیک مطابق تصویر نمونه */
+        .mahlin-navbar {
+            background-color: rgba(244, 248, 247, 0.94);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--mahlin-border);
+            padding: 14px 0;
+        }
+
+        .brand-logo-circle {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #169385, var(--mahlin-teal));
+            color: var(--mahlin-white);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+            box-shadow: 0 4px 12px rgba(17, 122, 111, 0.22);
+            flex-shrink: 0;
+        }
+
+        .brand-title {
+            color: var(--mahlin-navy);
             font-weight: 800;
-            color: var(--primary-color) !important;
-            font-size: 1.3rem;
+            font-size: 1.2rem;
+            margin-bottom: 2px;
+            line-height: 1.3;
         }
-        .nav-link {
+
+        .brand-subtitle {
+            color: var(--mahlin-muted);
+            font-size: 0.78rem;
             font-weight: 500;
-            color: #334155 !important;
+            margin: 0;
+        }
+
+        .nav-link-custom {
+            color: var(--mahlin-navy);
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 8px 14px;
+            border-radius: 10px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link-custom:hover {
+            color: var(--mahlin-teal);
+            background-color: var(--mahlin-teal-soft);
+        }
+
+        /* دکمه‌های اصلی و فرعی مطابق تصویر نمونه */
+        .btn-mahlin-primary {
+            background-color: var(--mahlin-teal);
+            color: var(--mahlin-white) !important;
+            border: 1.5px solid var(--mahlin-teal);
+            border-radius: var(--radius-md);
+            padding: 13px 26px;
+            font-weight: 700;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-decoration: none;
+            box-shadow: 0 6px 18px rgba(17, 122, 111, 0.2);
+            transition: all 0.25s ease;
+        }
+
+        .btn-mahlin-primary:hover {
+            background-color: var(--mahlin-teal-hover);
+            border-color: var(--mahlin-teal-hover);
+            transform: translateY(-2px);
+        }
+
+        .btn-mahlin-outline {
+            background-color: var(--mahlin-white);
+            color: var(--mahlin-teal) !important;
+            border: 1.5px solid #bfd8d5;
+            border-radius: var(--radius-md);
+            padding: 13px 26px;
+            font-weight: 700;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-decoration: none;
+            transition: all 0.25s ease;
+        }
+
+        .btn-mahlin-outline:hover {
+            background-color: var(--mahlin-teal-soft);
+            border-color: var(--mahlin-teal);
+        }
+
+        .menu-toggle-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            border: 1px solid var(--mahlin-border);
+            background: var(--mahlin-white);
+            color: var(--mahlin-navy);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+        }
+
+        /* فوتر حرفه‌ای */
+        .mahlin-footer {
+            background-color: var(--mahlin-navy);
+            color: #d9e2ec;
+            padding: 56px 0 32px;
+            margin-top: 72px;
+        }
+
+        .mahlin-footer a {
+            color: #bcccdc;
+            text-decoration: none;
             transition: color 0.2s;
         }
-        .nav-link:hover {
-            color: var(--primary-color) !important;
-        }
 
-        /* کارت‌ها و کانتینرها */
-        .card-custom {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-            transition: transform 0.2s;
-        }
-        .card-custom:hover {
-            transform: translateY(-3px);
-        }
-
-        /* دکمه‌های اصلی */
-        .btn-custom-primary {
-            background-color: var(--primary-color);
-            color: #ffffff;
-            border-radius: 12px;
-            padding: 10px 24px;
-            font-weight: 600;
-            border: none;
-        }
-        .btn-custom-primary:hover {
-            background-color: #0369a1;
+        .mahlin-footer a:hover {
             color: #ffffff;
         }
 
-        footer {
-            background-color: #0f172a;
-            color: #94a3b8;
-            padding: 40px 0;
-            margin-top: 60px;
+        /* نوار رزرو ثابت پایین صفحه در موبایل */
+        .mobile-sticky-bar {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            left: 0;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid var(--mahlin-border);
+            padding: 10px 16px;
+            z-index: 1040;
+            box-shadow: 0 -4px 20px rgba(16, 42, 67, 0.06);
         }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body>
 
-    <!-- هدر ناوبری اصلی -->
-    <nav class="navbar navbar-expand-lg sticky-top">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center gap-2" href="/">
-                <i class="fa-solid fa-tooth fs-4"></i> کلینیک ماهلین
-            </a>
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="mainNavbar">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-2">
-                    <li class="nav-item"><a class="nav-link" href="/">صفحه اصلی</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/doctors/">پزشکان ما</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/about/">درباره ما</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/contact/">تماس با ما</a></li>
-                </ul>
-                <div class="d-flex align-items-center gap-3">
-                    <a href="/doctor-panel/" class="btn btn-outline-primary rounded-pill px-4 py-2 fw-medium" style="font-size: 0.9rem;">
-                        <i class="fa-solid fa-user-lock ms-1"></i> پنل کاربری
-                    </a>
+    <!-- هدر اصلی سایت -->
+    <header class="mahlin-navbar sticky-top">
+        <div class="container d-flex align-items-center justify-content-between">
+            <!-- هویت بصری کلینیک ماهلین (سمت راست) -->
+            <a href="/" class="d-flex align-items-center gap-3 text-decoration-none">
+                <span class="brand-logo-circle">
+                    <i class="fa-solid fa-tooth"></i>
+                </span>
+                <div>
+                    <div class="brand-title">کلینیک دندان‌پزشکی ماهلین</div>
+                    <p class="brand-subtitle">لبخندی سالم، حسی ماندگار</p>
                 </div>
+            </a>
+
+            <!-- لینک‌های ناوبری دسکتاپ -->
+            <nav class="d-none d-lg-flex align-items-center gap-1">
+                <a href="/" class="nav-link-custom">صفحه اصلی</a>
+                <a href="/#about-section" class="nav-link-custom">معرفی کلینیک</a>
+                <a href="/#services-section" class="nav-link-custom">خدمات</a>
+                <a href="/#doctors-section" class="nav-link-custom">پزشکان</a>
+                <a href="/#faq-section" class="nav-link-custom">پرسش‌های متداول</a>
+                <a href="/#contact-section" class="nav-link-custom">تماس و آدرس</a>
+            </nav>
+
+            <!-- دکمه‌های ورود و رزرو دسکتاپ + دکمه منوی موبایل -->
+            <div class="d-flex align-items-center gap-2">
+                {% if user.is_authenticated %}
+                    <a href="/dashboard/" class="btn-mahlin-outline py-2 px-3 d-none d-lg-inline-flex" style="font-size: 0.9rem;">
+                        <i class="fa-regular fa-user"></i> پنل کاربری
+                    </a>
+                {% else %}
+                    <a href="/login/" class="btn-mahlin-outline py-2 px-3 d-none d-lg-inline-flex" style="font-size: 0.9rem;">
+                        <i class="fa-solid fa-right-to-bracket"></i> ورود کاربران / پزشکان
+                    </a>
+                {% endif %}
+                <a href="/book/" class="btn-mahlin-primary py-2 px-3 d-none d-sm-inline-flex" style="font-size: 0.9rem;">
+                    <i class="fa-regular fa-calendar-check"></i> رزرو نوبت
+                </a>
+                <button class="menu-toggle-btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mahlinMobileMenu" aria-label="منوی سایت">
+                    <i class="fa-solid fa-bars-staggered"></i>
+                </button>
             </div>
         </div>
-    </nav>
+    </header>
 
-    <!-- پیام‌های سیستم -->
-    <div class="container mt-3">
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-info alert-dismissible fade show rounded-4 border-0 shadow-sm" role="alert">
-                    <i class="fa-solid fa-circle-info ms-2"></i> {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <!-- منوی کشویی موبایل -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="mahlinMobileMenu" style="max-width: 300px; background-color: var(--mahlin-bg);">
+        <div class="offcanvas-header border-bottom bg-white">
+            <div class="d-flex align-items-center gap-2">
+                <span class="brand-logo-circle" style="width: 38px; height: 38px; font-size: 1.05rem;">
+                    <i class="fa-solid fa-tooth"></i>
+                </span>
+                <div>
+                    <div class="fw-bold text-dark">کلینیک ماهلین</div>
+                    <small class="text-muted" style="font-size: 0.75rem;">لبخندی سالم، حسی ماندگار</small>
                 </div>
-            {% endfor %}
-        {% endif %}
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body d-flex flex-column justify-content-between">
+            <div class="d-flex flex-column gap-2">
+                <a href="/" class="btn bg-white text-end py-3 px-3 rounded-3 border fw-semibold text-dark">
+                    <i class="fa-solid fa-house ms-2" style="color: var(--mahlin-teal);"></i> صفحه اصلی
+                </a>
+                <a href="/#services-section" class="btn bg-white text-end py-3 px-3 rounded-3 border fw-semibold text-dark">
+                    <i class="fa-solid fa-tooth ms-2" style="color: var(--mahlin-teal);"></i> خدمات دندان‌پزشکی
+                </a>
+                <a href="/#doctors-section" class="btn bg-white text-end py-3 px-3 rounded-3 border fw-semibold text-dark">
+                    <i class="fa-solid fa-user-doctor ms-2" style="color: var(--mahlin-teal);"></i> پزشکان کلینیک
+                </a>
+                <a href="/#steps-section" class="btn bg-white text-end py-3 px-3 rounded-3 border fw-semibold text-dark">
+                    <i class="fa-solid fa-list-check ms-2" style="color: var(--mahlin-teal);"></i> راهنمای رزرو نوبت
+                </a>
+                <a href="/#contact-section" class="btn bg-white text-end py-3 px-3 rounded-3 border fw-semibold text-dark">
+                    <i class="fa-solid fa-location-dot ms-2" style="color: var(--mahlin-teal);"></i> آدرس و اطلاعات تماس
+                </a>
+                {% if user.is_authenticated %}
+                    <a href="/dashboard/" class="btn bg-white text-end py-3 px-3 rounded-3 border fw-semibold text-dark">
+                        <i class="fa-solid fa-id-card ms-2" style="color: var(--mahlin-teal);"></i> مشاهده پنل کاربری من
+                    </a>
+                    <a href="/logout/" class="btn bg-white text-end py-3 px-3 rounded-3 border fw-semibold text-danger">
+                        <i class="fa-solid fa-power-off ms-2"></i> خروج از حساب
+                    </a>
+                {% else %}
+                    <a href="/login/" class="btn bg-white text-end py-3 px-3 rounded-3 border fw-semibold text-dark">
+                        <i class="fa-solid fa-user-lock ms-2" style="color: var(--mahlin-teal);"></i> ورود بیمار / پزشک
+                    </a>
+                {% endif %}
+            </div>
+            <div class="mt-4">
+                <a href="/book/" class="btn-mahlin-primary w-100">
+                    <i class="fa-regular fa-calendar-check"></i> رزرو آنلاین نوبت
+                </a>
+            </div>
+        </div>
     </div>
 
     <!-- محتوای صفحات -->
-    <main class="container py-4">
-        {% block content %}
-        {% endblock %}
+    <main>
+        {% block content %}{% endblock %}
     </main>
 
-    <!-- فوتر سایت -->
-    <footer>
-        <div class="container text-center">
-            <h5 class="text-white fw-bold mb-3"><i class="fa-solid fa-tooth text-info ms-2"></i> کلینیک تخصصی دندان‌پزشکی ماهلین</h5>
-            <p class="small mb-2">ارائه دهنده بالاترین استاندارد خدمات درمانی و زیبایی دندان</p>
-            <hr class="border-secondary opacity-25 my-3">
-            <small class="text-muted">تمامی حقوق محفوظ است و برای کلینیک ماهلین رزرو شده است © ۱۴۰۵</small>
+    <!-- فوتر حرفه‌ای سایت -->
+    <footer class="mahlin-footer">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-12 col-lg-5">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <span class="brand-logo-circle">
+                            <i class="fa-solid fa-tooth"></i>
+                        </span>
+                        <div>
+                            <h5 class="fw-bold text-white mb-1">کلینیک دندان‌پزشکی ماهلین</h5>
+                            <span class="small text-light opacity-75">لبخندی سالم، حسی ماندگار</span>
+                        </div>
+                    </div>
+                    <p class="small opacity-75 mb-0" style="max-width: 420px; line-height: 1.9;">
+                        کلینیک دندان‌پزشکی ماهلین با بهره‌گیری از تجهیزات مدرن، محیطی آرام و استریل و حضور دندان‌پزشکان مجرب، آماده ارائه خدمات درمانی و زیبایی دندان به مراجعین گرامی است.
+                    </p>
+                </div>
+
+                <div class="col-6 col-lg-3">
+                    <h6 class="text-white fw-bold mb-3">دسترسی سریع</h6>
+                    <ul class="list-unstyled d-flex flex-column gap-2 small">
+                        <li><a href="/"><i class="fa-solid fa-angle-left ms-1"></i> صفحه اصلی</a></li>
+                        <li><a href="/#services-section"><i class="fa-solid fa-angle-left ms-1"></i> خدمات کلینیک</a></li>
+                        <li><a href="/#doctors-section"><i class="fa-solid fa-angle-left ms-1"></i> پزشکان ما</a></li>
+                        <li><a href="/#faq-section"><i class="fa-solid fa-angle-left ms-1"></i> پرسش‌های متداول</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-6 col-lg-4">
+                    <h6 class="text-white fw-bold mb-3">سامانه نوبت‌دهی و کاربران</h6>
+                    <ul class="list-unstyled d-flex flex-column gap-2 small">
+                        <li><a href="/book/"><i class="fa-regular fa-calendar-check ms-1"></i> رزرو آنلاین نوبت</a></li>
+                        <li><a href="/login/"><i class="fa-solid fa-user-check ms-1"></i> ورود به پنل بیمار</a></li>
+                        <li><a href="/doctor-panel/"><i class="fa-solid fa-user-doctor ms-1"></i> ورود به پنل پزشکان</a></li>
+                        <li><a href="/admin/"><i class="fa-solid fa-shield-halved ms-1"></i> بخش مدیریت کلینیک</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <hr class="border-secondary opacity-25 my-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center small opacity-75 gap-2">
+                <span>تمامی حقوق برای کلینیک دندان‌پزشکی ماهلین محفوظ است.</span>
+                <span>طراحی شده با رویکرد آرامش و سلامت مراجعین</span>
+            </div>
         </div>
     </footer>
 
-    <!-- اسکریپت بوت‌استرپ -->
+    <!-- نوار رزرو ثابت پایین صفحه مخصوص موبایل -->
+    <div class="mobile-sticky-bar d-lg-none">
+        <div class="d-flex gap-2">
+            <a href="/book/" class="btn-mahlin-primary flex-grow-1 py-2">
+                <i class="fa-regular fa-calendar-check"></i> رزرو نوبت
+            </a>
+            <a href="/#doctors-section" class="btn-mahlin-outline py-2 px-3">
+                پزشکان
+            </a>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     {% block extra_js %}{% endblock %}
 </body>
