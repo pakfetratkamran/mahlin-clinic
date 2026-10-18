@@ -1,357 +1,569 @@
 {% extends 'base.html' %}
 
-{% block title %}کلینیک دندان‌پزشکی ماهلین | نوبت‌دهی آنلاین{% endblock %}
+{% block title %}کلینیک دندان‌پزشکی ماهلین | لبخند زیبای شما، از اینجا شروع می‌شود{% endblock %}
 
 {% block extra_css %}
 <style>
-    /* استایل اختصاصی بنر و بخش‌های صفحه اصلی */
-    .hero-img-box {
-        width: 100%;
-        height: 220px;
-        border-radius: 22px;
-        overflow: hidden;
-        position: relative;
-        background: linear-gradient(135deg, #bae6fd, #e0f2fe);
+    /* ۱. بخش ابتدایی صفحه (Hero Section) مطابق تصویر نمونه */
+    .hero-wrapper {
+        padding: 24px 0 48px;
     }
-    .hero-img-box img {
+
+    .hero-card {
+        background-color: var(--mahlin-white);
+        border: 1px solid var(--mahlin-border);
+        border-radius: 26px;
+        padding: 22px;
+        box-shadow: 0 12px 36px rgba(16, 42, 67, 0.05);
+    }
+
+    @media (min-width: 992px) {
+        .hero-card {
+            padding: 44px;
+        }
+    }
+
+    .hero-image-frame {
+        border-radius: 20px;
+        overflow: hidden;
+        background-color: #e6f3f1;
+        box-shadow: 0 8px 24px rgba(16, 42, 67, 0.07);
+        aspect-ratio: 16 / 10;
+        width: 100%;
+    }
+
+    .hero-image-frame img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .hero-kicker {
+        color: var(--mahlin-teal);
+        font-weight: 700;
+        font-size: 0.95rem;
+        margin-bottom: 10px;
+        display: inline-block;
+    }
+
+    .hero-main-title {
+        color: var(--mahlin-navy);
+        font-weight: 900;
+        font-size: clamp(1.65rem, 3.2vw, 2.55rem);
+        line-height: 1.45;
+        margin-bottom: 14px;
+    }
+
+    .hero-subtitle {
+        color: var(--mahlin-muted);
+        font-size: 1rem;
+        line-height: 1.85;
+        margin-bottom: 26px;
+    }
+
+    /* استایل عمومی بخش‌ها و کارت‌ها */
+    .section-spacing {
+        padding: 44px 0;
+    }
+
+    .section-tag {
+        background-color: var(--mahlin-teal-soft);
+        color: var(--mahlin-teal);
+        font-weight: 700;
+        font-size: 0.82rem;
+        padding: 6px 16px;
+        border-radius: 50px;
+        display: inline-block;
+        margin-bottom: 10px;
+    }
+
+    .section-heading {
+        color: var(--mahlin-navy);
+        font-weight: 800;
+        font-size: clamp(1.35rem, 2.3vw, 1.85rem);
+        margin-bottom: 12px;
+    }
+
+    .clean-card {
+        background-color: var(--mahlin-white);
+        border: 1px solid var(--mahlin-border);
+        border-radius: var(--radius-lg);
+        padding: 24px;
+        height: 100%;
+        box-shadow: 0 6px 20px rgba(16, 42, 67, 0.03);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .clean-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 28px rgba(16, 42, 67, 0.08);
+    }
+
+    .service-icon-box {
+        width: 54px;
+        height: 54px;
+        border-radius: 16px;
+        background-color: var(--mahlin-teal-soft);
+        color: var(--mahlin-teal);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        margin-bottom: 16px;
+    }
+
+    /* کارت پزشکان */
+    .doctor-photo-wrapper {
+        width: 88px;
+        height: 88px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 3px solid var(--mahlin-teal-soft);
+        background-color: var(--mahlin-teal-soft);
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--mahlin-teal);
+        font-size: 2rem;
+    }
+
+    .doctor-photo-wrapper img {
         width: 100%;
         height: 100%;
         object-fit: cover;
     }
 
-    /* باکس دوقلوی ساعت کاری و رزرو سریع (مشابه عکس نمونه) */
-    .bento-grid {
-        display: grid;
-        grid-template-columns: 1.15fr 0.85fr;
-        gap: 12px;
-    }
-    .working-hours-card {
-        background: #f8fafc;
-        border-radius: 22px;
-        padding: 18px;
-        border: 1px solid #e2e8f0;
-    }
-    .book-now-card {
-        background: var(--cyan-soft);
-        border-radius: 22px;
-        padding: 18px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        align-items: center;
-        text-align: center;
-        text-decoration: none;
-        color: var(--blue-dark);
-        transition: transform 0.2s ease;
-    }
-    .book-now-card:active, .book-now-card:hover {
-        transform: scale(0.98);
-        color: var(--blue-dark);
-    }
-    .book-now-circle {
-        width: 46px;
-        height: 46px;
-        background: #ffffff;
-        border-radius: 50%;
-        display: flex;
+    /* مراحل نوبت‌دهی */
+    .step-badge {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background-color: var(--mahlin-teal);
+        color: var(--mahlin-white);
+        font-weight: 800;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.1rem;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-        margin-bottom: 10px;
+        margin-bottom: 14px;
     }
 
-    /* اسلایدر لمسی نظرات بیماران (بدون اسکرول مزاحم) */
-    .reviews-slider {
-        display: flex;
-        gap: 16px;
-        overflow-x: auto;
-        scroll-snap-type: x mandatory;
-        padding-bottom: 12px;
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
-    .reviews-slider::-webkit-scrollbar {
-        display: none;
-    }
-    .review-card {
-        min-width: 280px;
-        max-width: 310px;
-        background: #f8fafc;
-        border-radius: 22px;
-        padding: 20px;
-        scroll-snap-align: start;
-        border: 1px solid #e2e8f0;
+    /* آکاردئون پرسش‌های متداول */
+    .accordion-item {
+        border: 1px solid var(--mahlin-border) !important;
+        border-radius: 14px !important;
+        margin-bottom: 12px;
+        overflow: hidden;
     }
 
-    /* کارت پزشکان */
-    .doctor-avatar {
-        width: 68px;
-        height: 68px;
-        border-radius: 20px;
-        object-fit: cover;
-        background: #e2e8f0;
+    .accordion-button {
+        font-weight: 700;
+        color: var(--mahlin-navy);
+        background-color: var(--mahlin-white);
+        padding: 18px 20px;
     }
 
-    /* ورودی‌های فرم مناسب لمس موبایل */
-    .touch-input {
-        height: 54px;
-        border-radius: 16px;
-        border: 1.5px solid #e2e8f0;
-        padding: 0 16px;
-        font-size: 0.95rem;
-        background: #f8fafc;
-    }
-    .touch-input:focus {
-        background: #ffffff;
-        border-color: var(--cyan-primary);
-        box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.12);
+    .accordion-button:not(.collapsed) {
+        background-color: var(--mahlin-teal-soft);
+        color: var(--mahlin-teal);
+        box-shadow: none;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="row g-4">
+<div class="container">
 
-    <!-- ۱. بخش اصلی (Hero Section مشابه طرح Lume Dental) -->
-    <div class="col-12 col-lg-6">
-        <div class="app-card h-100 d-flex flex-column justify-content-between">
-            <div>
-                <span class="section-badge">کلینیک تخصصی دندان‌پزشکی</span>
-                <h1 class="fw-bold mb-3" style="font-size: 1.85rem; line-height: 1.4;">
-                    لبخند بی‌نقص شما با <span class="text-info">کلینیک ماهلین</span> آغاز می‌شود
-                </h1>
-                <p class="text-muted mb-4" style="font-size: 0.95rem; line-height: 1.8;">
-                    ارائه پیشرفته‌ترین خدمات دندان‌پزشکی، ایمپلنت و طراحی لبخند در محیطی آرام، استریل و با حضور متخصصین مجرب. همین امروز نوبت خود را آنلاین رزرو کنید.
-                </p>
-
-                <!-- تصویر بنر -->
-                <div class="hero-img-box mb-3">
-                    <img src="https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=900&q=80" alt="کلینیک دندانپزشکی ماهلین">
-                </div>
-            </div>
-
-            <!-- باکس دوقلوی ساعات کاری و دکمه فیروزه‌ای رزرو -->
-            <div class="bento-grid mt-2">
-                <div class="working-hours-card">
-                    <h6 class="fw-bold mb-2" style="font-size: 0.9rem;">
-                        <i class="fa-regular fa-clock text-info ms-1"></i> ساعات کاری
-                    </h6>
-                    <div class="text-muted" style="font-size: 0.8rem; line-height: 1.7;">
-                        <div>شنبه تا چهارشنبه: ۹ صبح تا ۹ شب</div>
-                        <div>پنج‌شنبه‌ها: ۱۰ صبح تا ۶ عصر</div>
+    <!-- ۱. بخش ابتدایی صفحه (Hero Section) دقیقاً مطابق تصویر ارسالی -->
+    <section class="hero-wrapper">
+        <div class="hero-card">
+            <div class="row align-items-center g-4 g-lg-5">
+                <!-- تصویر محیط کلینیک (در موبایل بالا، در لپ‌تاپ سمت چپ با کیفیت بالا) -->
+                <div class="col-12 col-lg-6 order-1 order-lg-2">
+                    <div class="hero-image-frame">
+                        <img src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=1400&q=85" alt="محیط کلینیک دندان‌پزشکی ماهلین">
                     </div>
                 </div>
 
-                <a href="#booking-section" class="book-now-card">
-                    <div class="book-now-circle">
-                        <i class="fa-solid fa-arrow-up-left"></i>
-                    </div>
-                    <span class="fw-bold" style="font-size: 0.9rem;">رزرو نوبت آنلاین</span>
-                </a>
-            </div>
-        </div>
-    </div>
+                <!-- متون و دکمه‌های اصلی (در موبایل وسط‌چین مشابه عکس، در دسکتاپ راست‌چین) -->
+                <div class="col-12 col-lg-6 order-2 order-lg-1 text-center text-lg-end">
+                    <span class="hero-kicker">مراقبت حرفه‌ای از لبخند شما</span>
+                    <h1 class="hero-main-title">
+                        لبخند زیبای شما، از اینجا شروع می‌شود
+                    </h1>
+                    <p class="hero-subtitle">
+                        خدمات دندان‌پزشکی متناسب با نیاز شما، در محیطی آرام و حرفه‌ای.
+                    </p>
 
-    <!-- ۲. بخش خدمات دندان‌پزشکی (Services Card) -->
-    <div class="col-12 col-lg-6">
-        <div class="app-card h-100 d-flex flex-column justify-content-between">
-            <div>
-                <span class="section-badge">خدمات ما</span>
-                <h2 class="fw-bold h4 mb-2">خدمات دندان‌پزشکی برای هر نیاز</h2>
-                <p class="text-muted mb-4" style="font-size: 0.9rem; line-height: 1.8;">
-                    از معاینات دوره‌ای و پیشگیری تا درمان‌های تخصصی زیبایی و ترمیمی، تمام خدمات را با جدیدترین تجهیزات ارائه می‌دهیم.
-                </p>
-
-                <div class="row g-3 mb-4">
-                    <div class="col-6">
-                        <div class="p-3 rounded-4 bg-light h-100">
-                            <i class="fa-solid fa-wand-magic-sparkles text-info fs-4 mb-2"></i>
-                            <h6 class="fw-bold mb-1" style="font-size: 0.9rem;">اصلاح طرح لبخند</h6>
-                            <small class="text-muted d-block" style="font-size: 0.78rem;">کامپوزیت و لمینت سرامیکی</small>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="p-3 rounded-4 bg-light h-100">
-                            <i class="fa-solid fa-Screwdriver-wrench text-info fs-4 mb-2"></i>
-                            <h6 class="fw-bold mb-1" style="font-size: 0.9rem;">ایمپلنت دیجیتال</h6>
-                            <small class="text-muted d-block" style="font-size: 0.78rem;">کاشت دندان بدون درد و جراحی</small>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="p-3 rounded-4 bg-light h-100">
-                            <i class="fa-solid fa-tooth text-info fs-4 mb-2"></i>
-                            <h6 class="fw-bold mb-1" style="font-size: 0.9rem;">درمان ریشه و ترمیم</h6>
-                            <small class="text-muted d-block" style="font-size: 0.78rem;">عصب‌کشی تخصصی با دستگاه</small>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="p-3 rounded-4 bg-light h-100">
-                            <i class="fa-solid fa-face-smile-beam text-info fs-4 mb-2"></i>
-                            <h6 class="fw-bold mb-1" style="font-size: 0.9rem;">ارتودنسی و زیبایی</h6>
-                            <small class="text-muted d-block" style="font-size: 0.78rem;">ردیف کردن دندان‌ها و بلیچینگ</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <a href="/doctors/" class="btn-pill-dark w-100 justify-content-center">
-                <span>مشاهده پزشکان و تخصص‌ها</span>
-                <i class="fa-solid fa-arrow-left"></i>
-            </a>
-        </div>
-    </div>
-
-    <!-- ۳. نمایش کارت پزشکان کلینیک -->
-    <div class="col-12">
-        <div class="app-card">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                    <span class="section-badge mb-1">تیم پزشکی</span>
-                    <h2 class="fw-bold h4 mb-0">پزشکان منتخب کلینیک</h2>
-                </div>
-                <a href="/doctors/" class="text-info text-decoration-none fw-bold" style="font-size: 0.9rem;">
-                    همه پزشکان <i class="fa-solid fa-chevron-left ms-1"></i>
-                </a>
-            </div>
-
-            <div class="row g-3">
-                {% for doctor in doctors %}
-                <div class="col-12 col-md-6 col-lg-4">
-                    <div class="p-3 rounded-4 border bg-light d-flex align-items-center justify-content-between gap-3">
-                        <div class="d-flex align-items-center gap-3">
-                            {% if doctor.profile_image %}
-                                <img src="{{ doctor.profile_image.url }}" class="doctor-avatar" alt="{{ doctor.name }}">
-                            {% else %}
-                                <div class="doctor-avatar d-flex align-items-center justify-content-center bg-info bg-opacity-10 text-info fs-3">
-                                    <i class="fa-solid fa-user-doctor"></i>
-                                </div>
-                            {% endif %}
-                            <div>
-                                <h6 class="fw-bold mb-1">{{ doctor.name|default:doctor }}</h6>
-                                <span class="badge bg-info bg-opacity-10 text-dark rounded-pill fw-normal px-2 py-1" style="font-size: 0.75rem;">
-                                    {{ doctor.specialty|default:"جراح و دندان‌پزشک" }}
-                                </span>
-                            </div>
-                        </div>
-                        <a href="#booking-section" class="icon-circle-white shadow-sm" title="رزرو نوبت">
-                            <i class="fa-solid fa-calendar-plus text-info"></i>
+                    <div class="d-grid d-sm-flex justify-content-center justify-content-lg-start gap-3">
+                        <a href="/book/" class="btn-mahlin-primary">
+                            <i class="fa-regular fa-calendar-check"></i>
+                            <span>رزرو نوبت</span>
+                        </a>
+                        <a href="#doctors-section" class="btn-mahlin-outline">
+                            <span>مشاهده پزشکان</span>
                         </a>
                     </div>
                 </div>
-                {% empty %}
-                <div class="col-12">
-                    <div class="text-center text-muted py-3">
-                        پزشکان کلینیک به‌زودی در این بخش نمایش داده می‌شوند.
+            </div>
+        </div>
+    </section>
+
+    <!-- ۲. معرفی کوتاه کلینیک -->
+    <section id="about-section" class="section-spacing">
+        <div class="clean-card p-4 p-lg-5">
+            <div class="row align-items-center g-4">
+                <div class="col-12 col-lg-7">
+                    <span class="section-tag">درباره کلینیک ماهلین</span>
+                    <h2 class="section-heading">تجربه‌ای آرام، دقیق و مطمئن از درمان‌های دندان‌پزشکی</h2>
+                    <p class="text-muted mb-0" style="line-height: 1.95;">
+                        در کلینیک دندان‌پزشکی ماهلین، اولویت ما سلامت دهان و دندان شما در فضایی به دور از استرس است. با رعایت کامل اصول بهداشتی و استریلیزاسیون، همراه با سامانه نوبت‌دهی آنلاین، تلاش کرده‌ایم تا فرآیند مراجعه و درمان برای شما شفاف، منظم و بدون اتلاف وقت باشد.
+                    </p>
+                </div>
+                <div class="col-12 col-lg-5">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="p-3 rounded-4 h-100" style="background-color: var(--mahlin-bg); border: 1px solid var(--mahlin-border);">
+                                <i class="fa-solid fa-shield-heart fs-4 mb-2" style="color: var(--mahlin-teal);"></i>
+                                <h6 class="fw-bold mb-1" style="color: var(--mahlin-navy);">محیط کاملاً استریل</h6>
+                                <small class="text-muted">رعایت دقیق استانداردهای بهداشتی</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 rounded-4 h-100" style="background-color: var(--mahlin-bg); border: 1px solid var(--mahlin-border);">
+                                <i class="fa-regular fa-clock fs-4 mb-2" style="color: var(--mahlin-teal);"></i>
+                                <h6 class="fw-bold mb-1" style="color: var(--mahlin-navy);">نوبت‌دهی منظم</h6>
+                                <small class="text-muted">انتخاب آنلاین پزشک و ساعت مراجعه</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ۳. نمایش خدمات کلینیک در قالب کارت‌های زیبا -->
+    <section id="services-section" class="section-spacing">
+        <div class="text-center mb-4">
+            <span class="section-tag">خدمات درمانی و زیبایی</span>
+            <h2 class="section-heading">خدمات کلینیک دندان‌پزشکی ماهلین</h2>
+            <p class="text-muted mb-0">ارائه خدمات تخصصی و عمومی دندان‌پزشکی متناسب با طرح درمان هر مراجعه‌کننده</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-12 col-md-6 col-lg-3">
+                <div class="clean-card">
+                    <div class="service-icon-box">
+                        <i class="fa-solid fa-tooth"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2" style="color: var(--mahlin-navy);">معاینه و ترمیم دندان</h5>
+                    <p class="small text-muted mb-0">
+                        تشخیص دقیق پوسیدگی‌ها و ترمیم تخصصی دندان با مواد هم‌رنگ و باکیفیت.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-3">
+                <div class="clean-card">
+                    <div class="service-icon-box">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2" style="color: var(--mahlin-navy);">خدمات زیبایی و لبخند</h5>
+                    <p class="small text-muted mb-0">
+                        اصلاح فرم و رنگ دندان‌ها، کامپوزیت ونیر، لمینت سرامیکی و جرم‌گیری حرفه‌ای.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-3">
+                <div class="clean-card">
+                    <div class="service-icon-box">
+                        <i class="fa-solid fa-screwdriver-wrench"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2" style="color: var(--mahlin-navy);">درمان ریشه (عصب‌کشی)</h5>
+                    <p class="small text-muted mb-0">
+                        درمان تخصصی ریشه دندان‌های آسیب‌دیده با تجهیزات دقیق و حداقل درد.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-3">
+                <div class="clean-card">
+                    <div class="service-icon-box">
+                        <i class="fa-solid fa-kit-medical"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2" style="color: var(--mahlin-navy);">جراحی و ایمپلنت</h5>
+                    <p class="small text-muted mb-0">
+                        جایگزینی دندان‌های از دست رفته و جراحی‌های تخصصی دهان و دندان.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ۴. نمایش پزشکان واقعی از دیتابیس پروژه -->
+    <section id="doctors-section" class="section-spacing">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-4 gap-2">
+            <div>
+                <span class="section-tag">کادر درمان</span>
+                <h2 class="section-heading mb-1">پزشکان کلینیک ماهلین</h2>
+                <p class="text-muted mb-0">پزشک مورد نظر خود را انتخاب کرده و زمان مراجعه را رزرو نمایید</p>
+            </div>
+            <a href="/book/" class="btn-mahlin-primary py-2 px-4">
+                <i class="fa-regular fa-calendar-check"></i> ورود به صفحه رزرو نوبت
+            </a>
+        </div>
+
+        <div class="row g-4">
+            {% for doctor in doctors %}
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="clean-card d-flex flex-column justify-content-between">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="doctor-photo-wrapper">
+                            {% if doctor.profile_image %}
+                                <img src="{{ doctor.profile_image.url }}" alt="{{ doctor.name }}" loading="lazy">
+                            {% else %}
+                                <i class="fa-solid fa-user-doctor"></i>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-1" style="color: var(--mahlin-navy);">{{ doctor.name }}</h5>
+                            <span class="badge rounded-pill px-3 py-2 fw-medium" style="background-color: var(--mahlin-teal-soft); color: var(--mahlin-teal);">
+                                {{ doctor.specialty }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-2">
+                        <button type="button" class="btn-mahlin-outline flex-grow-1 py-2" style="font-size: 0.9rem;" data-bs-toggle="modal" data-bs-target="#doctorModal{{ doctor.id }}">
+                            مشاهده پروفایل
+                        </button>
+                        <a href="/book/" class="btn-mahlin-primary flex-grow-1 py-2" style="font-size: 0.9rem;">
+                            رزرو نوبت
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- پنجره پروفایل اختصاصی پزشک (متصل به اطلاعات واقعی دیتابیس) -->
+            <div class="modal fade" id="doctorModal{{ doctor.id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 rounded-4 overflow-hidden">
+                        <div class="modal-header border-bottom" style="background-color: var(--mahlin-bg);">
+                            <h6 class="modal-title fw-bold" style="color: var(--mahlin-navy);">پروفایل پزشک</h6>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
+                        </div>
+                        <div class="modal-body p-4 text-center">
+                            <div class="doctor-photo-wrapper mx-auto mb-3" style="width: 100px; height: 100px;">
+                                {% if doctor.profile_image %}
+                                    <img src="{{ doctor.profile_image.url }}" alt="{{ doctor.name }}">
+                                {% else %}
+                                    <i class="fa-solid fa-user-doctor"></i>
+                                {% endif %}
+                            </div>
+                            <h5 class="fw-bold mb-1" style="color: var(--mahlin-navy);">{{ doctor.name }}</h5>
+                            <p class="mb-3" style="color: var(--mahlin-teal); font-weight: 600;">{{ doctor.specialty }}</p>
+                            <div class="p-3 rounded-3 text-end small mb-3" style="background-color: var(--mahlin-bg); border: 1px solid var(--mahlin-border);">
+                                <div class="mb-1"><strong>مرکز فعالیت:</strong> کلینیک دندان‌پزشکی ماهلین</div>
+                                <div><strong>وضعیت پذیرش:</strong> فعال (امکان اخذ نوبت آنلاین)</div>
+                            </div>
+                            <a href="/book/" class="btn-mahlin-primary w-100">
+                                <i class="fa-regular fa-calendar-check"></i> رزرو نوبت با {{ doctor.name }}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="clean-card text-center py-5">
+                    <i class="fa-solid fa-user-doctor fs-1 mb-3" style="color: var(--mahlin-teal);"></i>
+                    <h6 class="fw-bold" style="color: var(--mahlin-navy);">در حال حاضر پزشکی در سامانه ثبت نشده است</h6>
+                    <p class="small text-muted mb-0">مشخصات پزشکان پس از ثبت در پنل مدیریت کلینیک، به صورت خودکار در این بخش نمایش داده می‌شود.</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- ۵. مراحل رزرو نوبت در سامانه -->
+    <section id="steps-section" class="section-spacing">
+        <div class="text-center mb-4">
+            <span class="section-tag">فرآیند نوبت‌دهی</span>
+            <h2 class="section-heading">مراحل رزرو آنلاین نوبت</h2>
+            <p class="text-muted mb-0">تنها در سه گام ساده نوبت ملاقات خود را در کلینیک ماهلین ثبت کنید</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-12 col-md-4">
+                <div class="clean-card">
+                    <span class="step-badge">۱</span>
+                    <h5 class="fw-bold mb-2" style="color: var(--mahlin-navy);">ورود با شماره موبایل</h5>
+                    <p class="small text-muted mb-0">
+                        روی دکمه «رزرو نوبت» کلیک کرده و شماره موبایل خود را وارد کنید تا وارد حساب کاربری خود شوید.
+                    </p>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="clean-card">
+                    <span class="step-badge">۲</span>
+                    <h5 class="fw-bold mb-2" style="color: var(--mahlin-navy);">انتخاب پزشک، تاریخ و ساعت</h5>
+                    <p class="small text-muted mb-0">
+                        پزشک مورد نظر، تاریخ شمسی و ساعت دلخواه خود را از میان زمان‌های آزاد انتخاب نمایید.
+                    </p>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="clean-card">
+                    <span class="step-badge">۳</span>
+                    <h5 class="fw-bold mb-2" style="color: var(--mahlin-navy);">ثبت نهایی و پیگیری از پنل</h5>
+                    <p class="small text-muted mb-0">
+                        نوبت شما بلافاصله ثبت شده و در پنل کاربری بیمار و پنل اختصاصی پزشک قابل مشاهده و مدیریت است.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ۶. بخش نظرات واقعی بیماران (بدون هیچ داده ساختگی) -->
+    <section id="reviews-section" class="section-spacing">
+        <div class="text-center mb-4">
+            <span class="section-tag">دیدگاه مراجعین</span>
+            <h2 class="section-heading">نظرات بیماران کلینیک</h2>
+        </div>
+
+        {% if reviews %}
+            <div class="row g-4">
+                {% for review in reviews %}
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="clean-card">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold" style="color: var(--mahlin-navy);">{{ review.patient_name }}</span>
+                            <span class="badge rounded-pill" style="background-color: var(--mahlin-teal-soft); color: var(--mahlin-teal);">
+                                امتیاز: {{ review.rating }} از ۵
+                            </span>
+                        </div>
+                        <p class="small text-muted mb-0">{{ review.comment }}</p>
                     </div>
                 </div>
                 {% endfor %}
             </div>
-        </div>
-    </div>
+        {% else %}
+            <div class="clean-card text-center py-4">
+                <i class="fa-regular fa-comments fs-2 mb-2" style="color: var(--mahlin-teal);"></i>
+                <h6 class="fw-bold mb-1" style="color: var(--mahlin-navy);">محل نمایش دیدگاه‌های ثبت‌شده مراجعین</h6>
+                <p class="small text-muted mb-0">
+                    تمامی نظرات واقعی مراجعین پس از ثبت و تایید در سامانه، بدون هیچ‌گونه دخل و تصرف در این بخش نمایش داده می‌شوند.
+                </p>
+            </div>
+        {% endif %}
+    </section>
 
-    <!-- ۴. فرم رزرو سریع و لمسی موبایل -->
-    <div class="col-12 col-lg-7" id="booking-section">
-        <div class="app-card">
-            <span class="section-badge">نوبت‌دهی فوری</span>
-            <h2 class="fw-bold h4 mb-2">رزرو آنلاین نوبت در چند ثانیه</h2>
-            <p class="text-muted mb-4" style="font-size: 0.88rem;">
-                اطلاعات خود و زمان دلخواهتان را وارد کنید تا نوبت شما ثبت شود.
-            </p>
-
-            <form method="POST" action="">
-                {% csrf_token %}
-                <div class="row g-3">
-                    <div class="col-12 col-md-6">
-                        <label class="form-label fw-medium small">نام و نام خانوادگی بیمار</label>
-                        <input type="text" name="patient_name" class="form-control touch-input" placeholder="مثلاً: علی رضایی" required>
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <label class="form-label fw-medium small">شماره موبایل (جهت پیامک نوبت)</label>
-                        <input type="tel" name="phone" dir="ltr" class="form-control touch-input text-end" placeholder="0912..." required>
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <label class="form-label fw-medium small">انتخاب پزشک</label>
-                        <select name="doctor" class="form-select touch-input" required>
-                            <option value="">انتخاب کنید...</option>
-                            {% for doctor in doctors %}
-                                <option value="{{ doctor.id }}">{{ doctor }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <label class="form-label fw-medium small">تاریخ مراجعه</label>
-                        <input type="date" name="date" class="form-control touch-input" required>
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <label class="form-label fw-medium small">ساعت</label>
-                        <select name="time" class="form-select touch-input" required>
-                            <option value="09:00">۰۹:۰۰</option>
-                            <option value="10:00">۱۰:۰۰</option>
-                            <option value="11:00">۱۱:۰۰</option>
-                            <option value="16:00">۱۶:۰۰</option>
-                            <option value="17:00">۱۷:۰۰</option>
-                            <option value="18:00">۱۸:۰۰</option>
-                            <option value="19:00">۱۹:۰۰</option>
-                        </select>
-                    </div>
-                    <div class="col-12 mt-4">
-                        <button type="submit" class="btn-pill-dark w-100 justify-content-center">
-                            <span>ثبت نهایی نوبت</span>
-                            <span class="icon-circle-white">
-                                <i class="fa-solid fa-check"></i>
-                            </span>
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- ۵. بخش نظرات بیماران (Testimonials مشابه عکس ارسالی) -->
-    <div class="col-12 col-lg-5">
-        <div class="app-card h-100">
-            <span class="section-badge">دیدگاه مراجعین</span>
-            <h2 class="fw-bold h4 mb-1">بیماران درباره ما چه می‌گویند؟</h2>
-            <p class="text-muted mb-3" style="font-size: 0.85rem;">لبخندهایی که خودشان سخن می‌گویند.</p>
-
-            <div class="reviews-slider">
-                <div class="review-card">
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <span class="fw-bold small">سارا محمدی</span>
-                        <div class="text-warning small">
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <span class="text-dark fw-bold ms-1">5.0</span>
-                        </div>
-                    </div>
-                    <p class="text-muted mb-0" style="font-size: 0.83rem; line-height: 1.8;">
-                        «همیشه از دندان‌پزشکی استرس داشتم، اما برخورد پرسنل و دقت پزشک در کلینیک ماهلین باعث شد بدون هیچ دردی درمانم انجام بشه.»
-                    </p>
+    <!-- ۷. پرسش‌های متداول (FAQ) -->
+    <section id="faq-section" class="section-spacing">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-9">
+                <div class="text-center mb-4">
+                    <span class="section-tag">پاسخ به سوالات شما</span>
+                    <h2 class="section-heading">پرسش‌های متداول</h2>
                 </div>
 
-                <div class="review-card">
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <span class="fw-bold small">امیرحسین کریمی</span>
-                        <div class="text-warning small">
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <span class="text-dark fw-bold ms-1">5.0</span>
+                <div class="accordion" id="mahlinFaq">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                چگونه می‌توانم در کلینیک ماهلین نوبت بگیرم؟
+                            </button>
+                        </h2>
+                        <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#mahlinFaq">
+                            <div class="accordion-body small text-muted">
+                                کافی است روی دکمه «رزرو نوبت» در بالای صفحه کلیک کنید، با شماره همراه خود وارد شوید و پس از انتخاب پزشک، تاریخ و ساعت مراجعه، نوبت خود را ثبت نمایید.
+                            </div>
                         </div>
                     </div>
-                    <p class="text-muted mb-0" style="font-size: 0.83rem; line-height: 1.8;">
-                        «نوبت‌دهی آنلاین خیلی سریع بود و دقیقاً سر ساعتی که رزرو کرده بودم بدون معطلی ویزیت شدم. محیط کلینیک فوق‌العاده تمیزه.»
-                    </p>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                آیا امکان مشاهده یا لغو نوبت ثبت‌شده وجود دارد؟
+                            </button>
+                        </h2>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#mahlinFaq">
+                            <div class="accordion-body small text-muted">
+                                بله؛ پس از ورود به حساب کاربری خود (بخش پنل کاربری)، فهرست تمام نوبت‌های ثبت‌شده شما به همراه وضعیت تایید و دکمه لغو نوبت در دسترس است.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                آیا سیستم از ثبت دو نوبت هم‌زمان برای یک پزشک جلوگیری می‌کند؟
+                            </button>
+                        </h2>
+                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#mahlinFaq">
+                            <div class="accordion-body small text-muted">
+                                بله؛ سامانه نوبت‌دهی کلینیک ماهلین به صورت خودکار ساعت‌های رزرو شده هر پزشک را بررسی کرده و اجازه ثبت نوبت تکراری در یک زمان واحد را نمی‌دهد.
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
+
+    <!-- ۸. اطلاعات تماس، ساعات کاری و مسیر دسترسی -->
+    <section id="contact-section" class="section-spacing">
+        <div class="clean-card p-4 p-lg-5">
+            <div class="row g-4 align-items-center">
+                <div class="col-12 col-lg-7">
+                    <span class="section-tag">راه‌های ارتباطی</span>
+                    <h2 class="section-heading">اطلاعات تماس و ساعات کاری کلینیک</h2>
+                    <p class="text-muted mb-4">
+                        برای مراجعه حضوری یا هماهنگی نوبت‌ها می‌توانید در ساعات کاری کلینیک با ما در ارتباط باشید.
+                    </p>
+
+                    <div class="row g-3">
+                        <div class="col-12 col-sm-6">
+                            <div class="d-flex align-items-start gap-3">
+                                <span class="service-icon-box mb-0" style="width: 44px; height: 44px; font-size: 1.1rem;">
+                                    <i class="fa-regular fa-clock"></i>
+                                </span>
+                                <div>
+                                    <h6 class="fw-bold mb-1" style="color: var(--mahlin-navy);">ساعات کاری</h6>
+                                    <p class="small text-muted mb-0">شنبه تا چهارشنبه: ۰۹:۰۰ الی ۲۰:۰۰<br>پنج‌شنبه‌ها: ۰۹:۰۰ الی ۱۴:۰۰</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-6">
+                            <div class="d-flex align-items-start gap-3">
+                                <span class="service-icon-box mb-0" style="width: 44px; height: 44px; font-size: 1.1rem;">
+                                    <i class="fa-solid fa-location-dot"></i>
+                                </span>
+                                <div>
+                                    <h6 class="fw-bold mb-1" style="color: var(--mahlin-navy);">نشانی و دسترسی</h6>
+                                    <p class="small text-muted mb-0">کلینیک تخصصی دندان‌پزشکی ماهلین<br>دسترسی آسان با وسائل نقلیه عمومی و شخصی</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-5 text-center">
+                    <div class="p-4 rounded-4" style="background-color: var(--mahlin-teal-soft); border: 1px solid var(--mahlin-border);">
+                        <i class="fa-solid fa-calendar-check fs-1 mb-3" style="color: var(--mahlin-teal);"></i>
+                        <h5 class="fw-bold mb-2" style="color: var(--mahlin-navy);">آماده رزرو نوبت هستید؟</h5>
+                        <p class="small text-muted mb-3">همین حالا بدون نیاز به تماس تلفنی، نوبت خود را به صورت آنلاین ثبت کنید.</p>
+                        <a href="/book/" class="btn-mahlin-primary w-100">
+                            <i class="fa-regular fa-calendar-check"></i> شروع رزرو نوبت آنلاین
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
 </div>
 {% endblock %}
