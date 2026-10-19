@@ -4,7 +4,7 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
-from django.db import connection, transaction
+from django.db import connection
 from django.db.models import Q, Count
 from django.core.paginator import Paginator
 from datetime import timedelta, datetime
@@ -19,7 +19,7 @@ from .forms import BookingForm
 
 
 # ==============================================================================
-# ۱. همگام‌ساز خودکار دیتابیس (جلوگیری ۱۰۰٪ از خطای OperationalError در Railway)
+# ۱. همگام‌ساز خودکار دیتابیس
 # ==============================================================================
 _SCHEMA_CHECKED = False
 
@@ -29,7 +29,6 @@ def ensure_mahlin_schema():
         return
     try:
         with connection.cursor() as cursor:
-            # بررسی ستون‌های جدول Doctor
             cursor.execute("PRAGMA table_info(booking_doctor)")
             doc_cols = [row[1] for row in cursor.fetchall()]
             if doc_cols:
@@ -42,13 +41,11 @@ def ensure_mahlin_schema():
                 if 'is_active' not in doc_cols:
                     cursor.execute("ALTER TABLE booking_doctor ADD COLUMN is_active bool DEFAULT 1")
 
-            # بررسی ستون‌های جدول Patient
             cursor.execute("PRAGMA table_info(booking_patient)")
             pat_cols = [row[1] for row in cursor.fetchall()]
             if pat_cols and 'medical_notes' not in pat_cols:
                 cursor.execute("ALTER TABLE booking_patient ADD COLUMN medical_notes TEXT DEFAULT ''")
 
-            # بررسی ستون‌های جدول Appointment
             cursor.execute("PRAGMA table_info(booking_appointment)")
             app_cols = [row[1] for row in cursor.fetchall()]
             if app_cols:
@@ -58,7 +55,6 @@ def ensure_mahlin_schema():
                 if 'cancel_reason' not in app_cols:
                     cursor.execute("ALTER TABLE booking_appointment ADD COLUMN cancel_reason VARCHAR(255) DEFAULT ''")
 
-            # ایجاد جدول StaffProfile در صورت عدم وجود
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS booking_staffprofile (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -71,7 +67,6 @@ def ensure_mahlin_schema():
                 )
             """)
 
-            # ایجاد جدول ClinicSettings در صورت عدم وجود
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS booking_clinicsettings (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -86,7 +81,6 @@ def ensure_mahlin_schema():
                 )
             """)
 
-            # ایجاد جدول AuditLog در صورت عدم وجود
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS booking_auditlog (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -102,7 +96,7 @@ def ensure_mahlin_schema():
 
 
 # ==============================================================================
-# ۲. توابع کمکی تاریخ، تنظیمات، لاگ امنیتی و کنترل دسترسی (RBAC)
+# ۲. توابع کمکی
 # ==============================================================================
 def to_jalali_str(greg_date):
     if not greg_date:
@@ -112,7 +106,6 @@ def to_jalali_str(greg_date):
 
 
 def parse_flexible_date(date_str):
-    """تبدیل ایمن تاریخ شمسی (1405/07/27) یا میلادی (2026-10-19) به date میلادی"""
     clean = date_str.strip().replace('-', '/')
     parts = [int(p) for p in clean.split('/')]
     if parts[0] < 1600:
@@ -135,7 +128,6 @@ def record_audit(user, action_type, details):
 
 
 def get_user_role(user):
-    """تشخیص نقش کاربر در سمت سرور"""
     ensure_mahlin_schema()
     if not user.is_authenticated:
         return None
@@ -150,7 +142,6 @@ def get_user_role(user):
 
 
 def staff_role_required(allowed_roles):
-    """دکوراتور امنیتی سمت سرور برای جلوگیری از ورود غیرمجاز حتی با لینک مستقیم"""
     def decorator(view_func):
         @wraps(view_func)
         def _wrapped_view(request, *args, **kwargs):
@@ -170,7 +161,7 @@ def staff_role_required(allowed_roles):
 
 
 # ==============================================================================
-# ۳. ویوهای اصلی سایت عمومی، بیمار و پزشک (حفظ ۱۰۰٪ عملکرد قبلی)
+# ۳. ویوهای اصلی سایت عمومی، بیمار و پزشک
 # ==============================================================================
 def home_page(request):
     ensure_mahlin_schema()
@@ -231,7 +222,6 @@ def book_appointment(request):
                 form.add_error('doctor', '❌ این پزشک در حال حاضر غیرفعال است.')
                 return render(request, 'book.html', {'form': form})
 
-            # جلوگیری از رزرو هم‌زمان در بک‌اند (نادیده گرفتن نوبت‌های لغوشده)
             conflict = Appointment.objects.filter(
                 doctor=doctor, date=gregorian_date, time=time_val
             ).exclude(status='canceled').exists()
@@ -314,44 +304,47 @@ def custom_404(request, exception):
 
 
 # ==============================================================================
-# ۴. احراز هویت و پنل مدیریت اختصاصی مالک کلینیک (مرحله جدید)
+# ۴. ورود و پنل مدیریت اختصاصی مالک کلینیک
 # ==============================================================================
 def manager_login(request):
-    """ورود امن مدیر مالک و کارکنان (به همراه راه‌اندازی اولیه امن در صورت نبود مدیر)"""
     ensure_mahlin_schema()
     if request.user.is_authenticated and get_user_role(request.user) in ['owner', 'receptionist']:
         return redirect('manager_dashboard')
 
-    has_owner = User.objects.filter(is_superuser=True).exists() or StaffProfile.objects.filter(role='owner', is_active=True).exists()
+    # بررسی وجود مالک در جدول جدید StaffProfile
+    has_owner = StaffProfile.objects.filter(role='owner', is_active=True).exists()
 
     if request.method == 'POST':
-        action = request.POST.get('action', 'login')
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '').strip()
+        full_name = request.POST.get('full_name', 'مدیر کلینیک ماهلین').strip()
 
-        # راه‌اندازی اولیه حساب مالک (فقط یک‌بار زمانی که هیچ مالکی در دیتابیس نیست)
-        if action == 'setup_owner' and not has_owner:
-            username = request.POST.get('username', '').strip()
-            full_name = request.POST.get('full_name', 'مدیر کلینیک ماهلین').strip()
-            password = request.POST.get('password', '').strip()
-            if len(username) < 3 or len(password) < 6:
-                messages.error(request, "نام کاربری حداقل ۳ کاراکتر و رمز عبور باید حداقل ۶ کاراکتر باشد.")
+        # اگر هنوز مالکی ثبت نشده، همین حساب را به عنوان مالک کلینیک ثبت و فعال کن
+        if not has_owner:
+            if len(username) < 3 or len(password) < 4:
+                messages.error(request, "نام کاربری حداقل ۳ کاراکتر و رمز عبور باید حداقل ۴ کاراکتر باشد.")
             else:
-                user, created = User.objects.get_or_create(username=username)
+                user, _ = User.objects.get_or_create(username=username)
                 user.set_password(password)
                 user.is_staff = True
                 user.is_superuser = True
+                user.is_active = True
                 user.save()
+
                 StaffProfile.objects.update_or_create(
                     user=user,
-                    defaults={'full_name': full_name, 'phone': username, 'role': 'owner', 'is_active': True}
+                    defaults={
+                        'full_name': full_name,
+                        'phone': username,
+                        'role': 'owner',
+                        'is_active': True
+                    }
                 )
-                record_audit(user, "ایجاد حساب مالک اولیه", f"حساب مالک کلینیک با نام کاربری {username} راه‌اندازی شد.")
+                record_audit(user, "ایجاد حساب مالک اولیه", f"حساب مالک کلینیک با نام کاربری {username} فعال شد.")
                 login(request, user)
-                messages.success(request, "حساب مالک کلینیک با موفقیت ساخته شد. خوش آمدید!")
+                messages.success(request, "حساب مدیر مالک با موفقیت ساخته شد. خوش آمدید!")
                 return redirect('manager_dashboard')
-
-        elif action == 'login':
-            username = request.POST.get('username', '').strip()
-            password = request.POST.get('password', '').strip()
+        else:
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 role = get_user_role(user)
@@ -369,19 +362,14 @@ def manager_login(request):
 
 @staff_role_required(['owner', 'receptionist'])
 def manager_dashboard(request):
-    """داشبورد و پنل جامع مدیریت کلینیک ماهلین"""
     ensure_mahlin_schema()
     role = request.staff_role
     today = timezone.now().date()
     active_tab = request.GET.get('tab', 'dashboard')
 
-    # ------------------------------------------------------------------
-    # پردازش عملیات‌های ارسالی (POST) با کنترل سطح دسترسی سمت سرور
-    # ------------------------------------------------------------------
     if request.method == 'POST':
         form_type = request.POST.get('form_type', '')
 
-        # ۱. افزودن یا ویرایش پزشک (مخصوص مدیر مالک)
         if form_type == 'save_doctor':
             if role != 'owner':
                 messages.error(request, "فقط مدیر مالک مجاز به تغییر اطلاعات پزشکان است.")
@@ -401,7 +389,6 @@ def manager_dashboard(request):
                 messages.error(request, "نام، تخصص و شماره تماس پزشک الزامی است.")
                 return redirect('/manager-panel/?tab=doctors')
 
-            # جلوگیری از ایجاد پزشک تکراری با شماره یکسان
             dup_qs = Doctor.objects.filter(phone=phone)
             if doc_id:
                 dup_qs = dup_qs.exclude(id=doc_id)
@@ -436,7 +423,6 @@ def manager_dashboard(request):
                 messages.success(request, f"پزشک جدید «{name}» با موفقیت به کلینیک اضافه شد.")
             return redirect('/manager-panel/?tab=doctors')
 
-        # ۲. تغییر وضعیت فعال/غیرفعال پزشک (مخصوص مدیر مالک)
         elif form_type == 'toggle_doctor':
             if role != 'owner':
                 messages.error(request, "عدم دسترسی مجاز.")
@@ -449,7 +435,6 @@ def manager_dashboard(request):
             messages.info(request, f"حساب «{doc.name}» {status_txt} شد.")
             return redirect('/manager-panel/?tab=doctors')
 
-        # ۳. ثبت نوبت جدید توسط مدیر یا پذیرش (با بررسی تداخل در بک‌اند)
         elif form_type == 'create_appointment':
             patient_name = request.POST.get('patient_name', '').strip()
             national_id = request.POST.get('national_id', '').strip()
@@ -466,7 +451,6 @@ def manager_dashboard(request):
                 messages.error(request, "فرمت تاریخ یا ساعت وارد شده معتبر نیست.")
                 return redirect('/manager-panel/?tab=appointments')
 
-            # بررسی عدم تداخل نوبت پزشک در بک‌اند
             if Appointment.objects.filter(doctor=doctor_obj, date=greg_date, time=time_obj).exclude(status='canceled').exists():
                 messages.error(request, f"خطای تداخل: دکتر {doctor_obj.name} در تاریخ {date_str} ساعت {time_str} نوبت فعال دیگری دارد.")
                 return redirect('/manager-panel/?tab=appointments')
@@ -492,7 +476,6 @@ def manager_dashboard(request):
             messages.success(request, "نوبت جدید با موفقیت ثبت و تأیید شد.")
             return redirect('/manager-panel/?tab=appointments')
 
-        # ۴. تغییر وضعیت یا زمان نوبت (تأیید، لغو، تکمیل، تغییر ساعت/تاریخ)
         elif form_type == 'update_appointment':
             appt = get_object_or_404(Appointment, id=request.POST.get('appointment_id'))
             new_status = request.POST.get('status', appt.status)
@@ -517,7 +500,6 @@ def manager_dashboard(request):
                     messages.error(request, "فرمت ساعت جدید صحیح نیست.")
                     return redirect('/manager-panel/?tab=appointments')
 
-            # اگر نوبت لغو نشده، تداخل زمان جدید را چک کن
             if new_status != 'canceled':
                 conflict = Appointment.objects.filter(
                     doctor=appt.doctor, date=target_date, time=target_time
@@ -538,7 +520,6 @@ def manager_dashboard(request):
             messages.success(request, f"وضعیت نوبت «{appt.patient.name}» بروزرسانی شد.")
             return redirect('/manager-panel/?tab=appointments')
 
-        # ۵. ویرایش اطلاعات بیمار (جلوگیری از کد ملی تکراری)
         elif form_type == 'update_patient':
             pat = get_object_or_404(Patient, id=request.POST.get('patient_id'))
             new_name = request.POST.get('name', '').strip()
@@ -560,7 +541,6 @@ def manager_dashboard(request):
             messages.success(request, "اطلاعات بیمار با موفقیت بروزرسانی شد.")
             return redirect('/manager-panel/?tab=patients')
 
-        # ۶. افزودن یا مدیریت کارکنان و نقش‌ها (فقط مدیر مالک)
         elif form_type == 'save_staff':
             if role != 'owner':
                 messages.error(request, "فقط مدیر مالک مجاز به مدیریت کارکنان و دسترسی‌ها است.")
@@ -576,7 +556,7 @@ def manager_dashboard(request):
                 messages.error(request, "نام و شماره/کد کاربری الزامی است.")
                 return redirect('/manager-panel/?tab=staff')
 
-            user_obj, created = User.objects.get_or_create(username=phone)
+            user_obj, _ = User.objects.get_or_create(username=phone)
             if password:
                 user_obj.set_password(password)
             user_obj.is_staff = (staff_role == 'owner')
@@ -596,7 +576,6 @@ def manager_dashboard(request):
             messages.success(request, f"حساب کاربری «{full_name}» با موفقیت ذخیره شد.")
             return redirect('/manager-panel/?tab=staff')
 
-        # ۷. ذخیره تنظیمات کلینیک (فقط مدیر مالک)
         elif form_type == 'save_settings':
             if role != 'owner':
                 messages.error(request, "فقط مدیر مالک مجاز به تغییر تنظیمات کلینیک است.")
@@ -617,10 +596,6 @@ def manager_dashboard(request):
             messages.success(request, "تنظیمات کلینیک ذخیره شد و در سایت اعمال گردید.")
             return redirect('/manager-panel/?tab=settings')
 
-    # ------------------------------------------------------------------
-    # استخراج داده‌های واقعی از پایگاه داده برای نمایش در پنل
-    # ------------------------------------------------------------------
-    # ۱. آمار داشبورد اصلی
     today_appointments_qs = Appointment.objects.filter(date=today).select_related('patient', 'doctor').order_by('time')
     for a in today_appointments_qs:
         a.jalali_date = to_jalali_str(a.date)
@@ -632,26 +607,23 @@ def manager_dashboard(request):
     total_patients = Patient.objects.count()
     active_doctors_count = Doctor.objects.filter(is_active=True).count()
 
-    # عملکرد هفتگی و ماهانه واقعی
     week_ago = today - timedelta(days=6)
     month_ago = today - timedelta(days=29)
     weekly_total = Appointment.objects.filter(date__gte=week_ago, date__lte=today).count()
     monthly_total = Appointment.objects.filter(date__gte=month_ago, date__lte=today).count()
 
-    # داده‌های نمودار ۷ روز اخیر (واقعی از دیتابیس)
     chart_days = []
     for i in range(6, -1, -1):
         d = today - timedelta(days=i)
         cnt = Appointment.objects.filter(date=d).exclude(status='canceled').count()
         chart_days.append({
-            'label': to_jalali_str(d)[5:],  # ماه/روز
+            'label': to_jalali_str(d)[5:],
             'count': cnt,
         })
     max_chart = max([item['count'] for item in chart_days] + [1])
     for item in chart_days:
         item['height_pct'] = int((item['count'] / max_chart) * 100) if item['count'] > 0 else 8
 
-    # ۲. فیلتر و جست‌وجوی پزشکان
     doc_q = request.GET.get('doc_q', '').strip()
     doc_status = request.GET.get('doc_status', '')
     doctors_qs = Doctor.objects.all().order_by('-is_active', 'id')
@@ -662,7 +634,6 @@ def manager_dashboard(request):
     elif doc_status == 'inactive':
         doctors_qs = doctors_qs.filter(is_active=False)
 
-    # ۳. فیلتر، جست‌وجو و صفحه‌بندی نوبت‌ها
     appt_q = request.GET.get('appt_q', '').strip()
     appt_doctor = request.GET.get('appt_doctor', '')
     appt_status = request.GET.get('appt_status', '')
@@ -691,7 +662,6 @@ def manager_dashboard(request):
     for a in appointments_page:
         a.jalali_date = to_jalali_str(a.date)
 
-    # ۴. فیلتر، جست‌وجو و صفحه‌بندی بیماران
     pat_q = request.GET.get('pat_q', '').strip()
     patients_qs = Patient.objects.annotate(appt_count=Count('appointment')).order_by('-id')
     if pat_q:
@@ -701,7 +671,6 @@ def manager_dashboard(request):
     pat_paginator = Paginator(patients_qs, 15)
     patients_page = pat_paginator.get_page(request.GET.get('pat_page', 1))
 
-    # ۵. فهرست کارکنان و لاگ‌های امنیتی
     staff_list = StaffProfile.objects.select_related('user').order_by('-created_at')
     audit_logs = AuditLog.objects.all()[:30] if role == 'owner' else []
 
@@ -710,7 +679,6 @@ def manager_dashboard(request):
         'staff_role': role,
         'today_jalali': to_jalali_str(today),
         'clinic': get_clinic_settings(),
-        # آمار داشبورد
         'total_today': total_today,
         'pending_count': pending_count,
         'confirmed_count': confirmed_count,
@@ -721,14 +689,12 @@ def manager_dashboard(request):
         'monthly_total': monthly_total,
         'today_appointments': today_appointments_qs,
         'chart_days': chart_days,
-        # داده‌های بخش‌ها
         'doctors_list': doctors_qs,
         'all_active_doctors': Doctor.objects.filter(is_active=True),
         'appointments_page': appointments_page,
         'patients_page': patients_page,
         'staff_list': staff_list,
         'audit_logs': audit_logs,
-        # مقادیر فیلترها
         'doc_q': doc_q,
         'doc_status': doc_status,
         'appt_q': appt_q,
