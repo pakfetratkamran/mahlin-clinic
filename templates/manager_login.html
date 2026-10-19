@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}ورود به پنل مدیریت | کلینیک دندان‌پزشکی ماهلین{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-7 col-lg-5">
+            <div class="bg-white p-4 p-md-5 rounded-4 shadow-sm" style="border: 1px solid var(--mahlin-border);">
+                <div class="text-center mb-4">
+                    <span class="brand-logo-circle mx-auto mb-3" style="width: 60px; height: 60px; font-size: 1.6rem;">
+                        <i class="fa-solid fa-user-shield"></i>
+                    </span>
+                    <h4 class="fw-bold mb-1" style="color: var(--mahlin-navy);">پنل مدیریت کلینیک ماهلین</h4>
+                    <p class="small text-muted mb-0">ویژه مدیر مالک و مسئولین پذیرش کلینیک</p>
+                </div>
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-warning rounded-3 small py-2">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+
+                {% if has_owner %}
+                <!-- فرم استاندارد ورود مدیر / پذیرش -->
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="login">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">نام کاربری یا شماره همراه</label>
+                        <input type="text" name="username" class="form-control form-control-lg rounded-3 fs-6" placeholder="نام کاربری مدیر" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small">رمز عبور</label>
+                        <input type="password" name="password" class="form-control form-control-lg rounded-3 fs-6" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn-mahlin-primary w-100 py-3">
+                        <i class="fa-solid fa-lock-open"></i> ورود امن به پنل مدیریت
+                    </button>
+                </form>
+                {% else %}
+                <!-- فرم راه‌اندازی اولیه حساب مالک (فقط زمانی فعال است که هیچ مدیری در دیتابیس نباشد) -->
+                <div class="alert alert-info rounded-3 small mb-3">
+                    <i class="fa-solid fa-circle-info ms-1"></i>
+                    هنوز حساب «مدیر مالک» در پایگاه داده تعریف نشده است. از فرم زیر اولین حساب مالک کلینیک را ایجاد کنید (پس از ساخت، این فرم به صورت خودکار قفل می‌شود).
+                </div>
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="setup_owner">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">نام و نام خانوادگی مالک</label>
+                        <input type="text" name="full_name" class="form-control rounded-3" placeholder="مثلاً: مدیریت کلینیک ماهلین" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">نام کاربری یا شماره موبایل (جهت ورود)</label>
+                        <input type="text" name="username" class="form-control rounded-3" placeholder="مثلاً: 09120000000 یا admin" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small">رمز عبور امن (حداقل ۶ کاراکتر)</label>
+                        <input type="password" name="password" class="form-control rounded-3" required>
+                    </div>
+                    <button type="submit" class="btn-mahlin-primary w-100 py-3">
+                        <i class="fa-solid fa-shield-check"></i> ایجاد حساب مالک و ورود به پنل
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
