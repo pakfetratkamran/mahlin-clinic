@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پنل مدیریت اختصاصی | {{ clinic.clinic_name }}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --m-teal: #117a6f;
+            --m-teal-dark: #0d6158;
+            --m-teal-soft: #e6f3f1;
+            --m-navy: #102a43;
+            --m-bg: #f4f8f7;
+            --m-border: #d9e6e4;
+            --sidebar-width: 260px;
+            --sidebar-collapsed-width: 78px;
+        }
+
+        * { font-family: 'Vazirmatn', sans-serif; }
+        body { background-color: var(--m-bg); color: #243b53; overflow-x: hidden; }
+
+        /* چیدمان پنل با منوی کناری قابل جمع‌شدن */
+        .admin-layout { display: flex; min-height: 100vh; }
+
+        .admin-sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--m-navy);
+            color: #fff;
+            transition: width 0.25s ease;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            z-index: 1030;
+        }
+
+        .admin-sidebar.collapsed { width: var(--sidebar-collapsed-width); }
+        .admin-sidebar.collapsed .hide-on-collapse { display: none !important; }
+
+        .sidebar-link {
+            color: #bcccdc;
+            text-decoration: none;
+            padding: 12px 18px;
+            border-radius: 12px;
+            margin: 4px 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            font-size: 0.92rem;
+            transition: all 0.2s;
+        }
+
+        .sidebar-link:hover, .sidebar-link.active {
+            background-color: var(--m-teal);
+            color: #ffffff;
+        }
+
+        .admin-main { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; }
+
+        .admin-topbar {
+            background: #ffffff;
+            border-bottom: 1px solid var(--m-border);
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .panel-card {
+            background: #ffffff;
+            border: 1px solid var(--m-border);
+            border-radius: 18px;
+            padding: 22px;
+            box-shadow: 0 4px 16px rgba(16, 42, 67, 0.03);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+
+        .btn-teal {
+            background-color: var(--m-teal);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 9px 18px;
+            font-weight: 600;
+        }
+        .btn-teal:hover { background-color: var(--m-teal-dark); color: #fff; }
+
+        /* نمودار میله‌ای واقعی */
+        .bar-chart-box {
+            height: 170px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            gap: 10px;
+            padding-top: 20px;
+            border-bottom: 1px solid var(--m-border);
+        }
+        .bar-col {
+            width: 34px;
+            background: linear-gradient(180deg, #169385, var(--m-teal));
+            border-radius: 8px 8px 0 0;
+            transition: height 0.3s;
+        }
+
+        @media (max-width: 991.98px) {
+            .admin-sidebar { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="admin-layout">
+    <!-- منوی کناری دسکتاپ (با قابلیت جمع‌شدن) -->
+    <aside class="admin-sidebar" id="desktopSidebar">
+        <div>
+            <div class="p-3 d-flex align-items-center justify-content-between border-bottom border-secondary border-opacity-25">
+                <div class="d-flex align-items-center gap-2 hide-on-collapse">
+                    <span class="badge p-2 rounded-circle" style="background: var(--m-teal);">
+                        <i class="fa-solid fa-tooth fs-6"></i>
+                    </span>
+                    <span class="fw-bold">{{ clinic.clinic_name }}</span>
+                </div>
+                <button class="btn btn-sm btn-outline-light border-0" onclick="document.getElementById('desktopSidebar').classList.toggle('collapsed')" title="جمع/باز کردن منو">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+
+            <nav class="mt-3">
+                <a href="?tab=dashboard" class="sidebar-link {% if active_tab == 'dashboard' %}active{% endif %}">
+                    <i class="fa-solid fa-chart-pie"></i> <span class="hide-on-collapse">داشبورد آماری</span>
+                </a>
+                <a href="?tab=appointments" class="sidebar-link {% if active_tab == 'appointments' %}active{% endif %}">
+                    <i class="fa-regular fa-calendar-check"></i> <span class="hide-on-collapse">مدیریت نوبت‌ها</span>
+                </a>
+                <a href="?tab=doctors" class="sidebar-link {% if active_tab == 'doctors' %}active{% endif %}">
+                    <i class="fa-solid fa-user-doctor"></i> <span class="hide-on-collapse">مدیریت پزشکان</span>
+                </a>
+                <a href="?tab=patients" class="sidebar-link {% if active_tab == 'patients' %}active{% endif %}">
+                    <i class="fa-solid fa-users"></i> <span class="hide-on-collapse">مدیریت بیماران</span>
+                </a>
+                {% if staff_role == 'owner' %}
+                <a href="?tab=staff" class="sidebar-link {% if active_tab == 'staff' %}active{% endif %}">
+                    <i class="fa-solid fa-user-lock"></i> <span class="hide-on-collapse">کارکنان و دسترسی‌ها</span>
+                </a>
+                <a href="?tab=settings" class="sidebar-link {% if active_tab == 'settings' %}active{% endif %}">
+                    <i class="fa-solid fa-sliders"></i> <span class="hide-on-collapse">تنظیمات کلینیک</span>
+                </a>
+                <a href="?tab=logs" class="sidebar-link {% if active_tab == 'logs' %}active{% endif %}">
+                    <i class="fa-solid fa-shield-halved"></i> <span class="hide-on-collapse">گزارش امنیتی سیستم</span>
+                </a>
+                {% endif %}
+            </nav>
+        </div>
+
+        <div class="p-3 border-top border-secondary border-opacity-25">
+            <a href="/" class="sidebar-link m-0 mb-1">
+                <i class="fa-solid fa-globe"></i> <span class="hide-on-collapse">مشاهده سایت اصلی</span>
+            </a>
+            <a href="/logout/" class="sidebar-link m-0 text-warning">
+                <i class="fa-solid fa-power-off"></i> <span class="hide-on-collapse">خروج امن</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- بخش اصلی پنل -->
+    <div class="admin-main">
+        <!-- نوار بالایی -->
+        <header class="admin-topbar sticky-top">
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-light border d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#mobileAdminMenu">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div>
+                    <h6 class="fw-bold mb-0" style="color: var(--m-navy);">پنل مدیریت اختصاصی {{ clinic.clinic_name }}</h6>
+                    <small class="text-muted">امروز: {{ today_jalali }}</small>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge rounded-pill px-3 py-2" style="background-color: var(--m-teal-soft); color: var(--m-teal);">
+                    <i class="fa-solid fa-user-check ms-1"></i>
+                    {{ request.user.username }} ({% if staff_role == 'owner' %}مدیر مالک{% else %}پذیرش{% endif %})
+                </span>
+                <a href="/" class="btn btn-sm btn-outline-secondary rounded-3 d-none d-sm-inline-block">صفحه اصلی سایت</a>
+            </div>
+        </header>
+
+        <!-- منوی موبایل پنل مدیریت -->
+        <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileAdminMenu" style="background: var(--m-navy); color: #fff; max-width: 270px;">
+            <div class="offcanvas-header border-bottom border-secondary border-opacity-25">
+                <h6 class="offcanvas-title fw-bold text-white">{{ clinic.clinic_name }}</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+            </div>
+            <div class="offcanvas-body p-2">
+                <a href="?tab=dashboard" class="sidebar-link {% if active_tab == 'dashboard' %}active{% endif %}"><i class="fa-solid fa-chart-pie"></i> داشبورد آماری</a>
+                <a href="?tab=appointments" class="sidebar-link {% if active_tab == 'appointments' %}active{% endif %}"><i class="fa-regular fa-calendar-check"></i> مدیریت نوبت‌ها</a>
+                <a href="?tab=doctors" class="sidebar-link {% if active_tab == 'doctors' %}active{% endif %}"><i class="fa-solid fa-user-doctor"></i> مدیریت پزشکان</a>
+                <a href="?tab=patients" class="sidebar-link {% if active_tab == 'patients' %}active{% endif %}"><i class="fa-solid fa-users"></i> مدیریت بیماران</a>
+                {% if staff_role == 'owner' %}
+                <a href="?tab=staff" class="sidebar-link {% if active_tab == 'staff' %}active{% endif %}"><i class="fa-solid fa-user-lock"></i> کارکنان و دسترسی‌ها</a>
+                <a href="?tab=settings" class="sidebar-link {% if active_tab == 'settings' %}active{% endif %}"><i class="fa-solid fa-sliders"></i> تنظیمات کلینیک</a>
+                <a href="?tab=logs" class="sidebar-link {% if active_tab == 'logs' %}active{% endif %}"><i class="fa-solid fa-shield-halved"></i> گزارش امنیتی</a>
+                {% endif %}
+                <hr class="border-secondary">
+                <a href="/" class="sidebar-link"><i class="fa-solid fa-globe"></i> مشاهده سایت</a>
+                <a href="/logout/" class="sidebar-link text-warning"><i class="fa-solid fa-power-off"></i> خروج از حساب</a>
+            </div>
+        </div>
+
+        <!-- محتوای متغیر تب‌ها -->
+        <div class="container-fluid p-3 p-lg-4">
+
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-info alert-dismissible fade show rounded-3 border-0 shadow-sm mb-4">
+                    <i class="fa-solid fa-bell ms-1"></i> {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- ======================= تب ۱: داشبورد اصلی ======================= -->
+            {% if active_tab == 'dashboard' %}
+            <div class="row g-3 mb-4">
+                <div class="col-6 col-xl-2">
+                    <div class="panel-card h-100">
+                        <div class="stat-icon mb-2" style="background: var(--m-teal-soft); color: var(--m-teal);"><i class="fa-solid fa-calendar-day"></i></div>
+                        <div class="fs-3 fw-bold" style="color: var(--m-navy);">{{ total_today }}</div>
+                        <div class="small text-muted">نوبت‌های امروز</div>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-2">
+                    <div class="panel-card h-100">
+                        <div class="stat-icon mb-2 bg-warning bg-opacity-10 text-warning"><i class="fa-regular fa-hourglass-half"></i></div>
+                        <div class="fs-3 fw-bold" style="color: var(--m-navy);">{{ pending_count }}</div>
+                        <div class="small text-muted">در انتظار تأیید</div>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-2">
+                    <div class="panel-card h-100">
+                        <div class="stat-icon mb-2 bg-success bg-opacity-10 text-success"><i class="fa-solid fa-check-double"></i></div>
+                        <div class="fs-3 fw-bold" style="color: var(--m-navy);">{{ confirmed_count }}</div>
+                        <div class="small text-muted">تأیید و تکمیل‌شده</div>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-2">
+                    <div class="panel-card h-100">
+                        <div class="stat-icon mb-2 bg-danger bg-opacity-10 text-danger"><i class="fa-solid fa-ban"></i></div>
+                        <div class="fs-3 fw-bold" style="color: var(--m-navy);">{{ canceled_count }}</div>
+                        <div class="small text-muted">نوبت‌های لغوشده</div>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-2">
+                    <div class="panel-card h-100">
+                        <div class="stat-icon mb-2 bg-info bg-opacity-10 text-info"><i class="fa-solid fa-hospital-user"></i></div>
+                        <div class="fs-3 fw-bold" style="color: var(--m-navy);">{{ total_patients }}</div>
+                        <div class="small text-muted">بیماران ثبت‌شده</div>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-2">
+                    <div class="panel-card h-100">
+                        <div class="stat-icon mb-2" style="background: var(--m-teal-soft); color: var(--m-teal);"><i class="fa-solid fa-user-doctor"></i></div>
+                        <div class="fs-3 fw-bold" style="color: var(--m-navy);">{{ active_doctors_count }}</div>
+                        <div class="small text-muted">پزشکان فعال</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- برنامه نوبت‌های امروز -->
+                <div class="col-12 col-lg-7">
+                    <div class="panel-card h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold mb-0">برنامه نوبت‌های امروز ({{ today_jalali }})</h6>
+                            <a href="?tab=appointments" class="btn btn-sm btn-teal">مدیریت تمام نوبت‌ها</a>
+                        </div>
+                        {% if today_appointments %}
+                        <div class="table-responsive">
+                            <table class="table align-middle small">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ساعت</th>
+                                        <th>بیمار</th>
+                                        <th>پزشک</th>
+                                        <th>وضعیت</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for appt in today_appointments %}
+                                    <tr>
+                                        <td class="fw-bold">{{ appt.time|time:"H:i" }}</td>
+                                        <td>{{ appt.patient.name }} <span class="text-muted">({{ appt.patient.phone }})</span></td>
+                                        <td>{{ appt.doctor.name }}</td>
+                                        <td>
+                                            {% if appt.status == 'confirmed' %}<span class="badge bg-success">تأییدشده</span>
+                                            {% elif appt.status == 'completed' %}<span class="badge bg-primary">تکمیل‌شده</span>
+                                            {% elif appt.status == 'canceled' %}<span class="badge bg-danger">لغوشده</span>
+                                            {% else %}<span class="badge bg-warning text-dark">در انتظار تأیید</span>{% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5 text-muted">
+                            <i class="fa-regular fa-calendar fs-2 mb-2 d-block"></i>
+                            برای امروز نوبتی ثبت نشده است.
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- خلاصه عملکرد هفتگی و ماهانه (داده‌های واقعی دیتابیس) -->
+                <div class="col-12 col-lg-5">
+                    <div class="panel-card h-100">
+                        <h6 class="fw-bold mb-3">نمودار نوبت‌های فعال ۷ روز اخیر</h6>
+                        <div class="bar-chart-box">
+                            {% for item in chart_days %}
+                            <div class="text-center d-flex flex-column align-items-center justify-content-end h-100">
+                                <small class="fw-bold mb-1" style="font-size: 0.75rem;">{{ item.count }}</small>
+                                <div class="bar-col" style="height: {{ item.height_pct }}%;"></div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="d-flex justify-content-around mt-2 small text-muted">
+                            {% for item in chart_days %}
+                            <span style="font-size: 0.72rem;">{{ item.label }}</span>
+                            {% endfor %}
+                        </div>
+
+                        <div class="row g-2 mt-4">
+                            <div class="col-6">
+                                <div class="p-3 rounded-3 bg-light text-center">
+                                    <div class="fw-bold fs-4" style="color: var(--m-teal);">{{ weekly_total }}</div>
+                                    <small class="text-muted">نوبت‌های ۷ روز گذشته</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-3 rounded-3 bg-light text-center">
+                                    <div class="fw-bold fs-4" style="color: var(--m-navy);">{{ monthly_total }}</div>
+                                    <small class="text-muted">نوبت‌های ۳۰ روز گذشته</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- ======================= تب ۲: مدیریت نوبت‌ها ======================= -->
+            {% if active_tab == 'appointments' %}
+            <div class="row g-4">
+                <!-- فرم ثبت نوبت توسط مدیر/پذیرش -->
+                <div class="col-12 col-xl-4">
+                    <div class="panel-card">
+                        <h6 class="fw-bold mb-3"><i class="fa-solid fa-calendar-plus ms-1" style="color: var(--m-teal);"></i> ثبت نوبت جدید توسط مدیریت</h6>
+                        <form method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="form_type" value="create_appointment">
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold">نام و نام خانوادگی بیمار</label>
+                                <input type="text" name="patient_name" class="form-control" required>
+                            </div>
+                            <div class="row g-2 mb-2">
+                                <div class="col-6">
+                                    <label class="form-label small fw-bold">کد ملی (۱۰ رقم)</label>
+                                    <input type="text" name="national_id" maxlength="10" class="form-control" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small fw-bold">شماره همراه</label>
+                                    <input type="text" name="phone" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold">انتخاب پزشک فعال</label>
+                                <select name="doctor_id" class="form-select" required>
+                                    {% for doc in all_active_doctors %}
+                                    <option value="{{ doc.id }}">{{ doc.name }} ({{ doc.specialty }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="row g-2 mb-3">
+                                <div class="col-7">
+                                    <label class="form-label small fw-bold">تاریخ (مثال: {{ today_jalali }})</label>
+                                    <input type="text" name="date" value="{{ today_jalali }}" class="form-control" required>
+                                </div>
+                                <div class="col-5">
+                                    <label class="form-label small fw-bold">ساعت</label>
+                                    <input type="time" name="time" value="10:00" class="form-control" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-teal w-100">ثبت و تأیید نوبت</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- فهرست، جست‌وجو و فیلتر نوبت‌ها -->
+                <div class="col-12 col-xl-8">
+                    <div class="panel-card">
+                        <h6 class="fw-bold mb-3">فهرست و مدیریت نوبت‌ها</h6>
+                        <form method="GET" class="row g-2 mb-3">
+                            <input type="hidden" name="tab" value="appointments">
+                            <div class="col-12 col-md-3">
+                                <input type="text" name="appt_q" value="{{ appt_q }}" class="form-control form-control-sm" placeholder="جست‌وجوی نام، کدملی یا کد...">
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <select name="appt_doctor" class="form-select form-select-sm">
+                                    <option value="">همه پزشکان</option>
+                                    {% for doc in doctors_list %}
+                                    <option value="{{ doc.id }}" {% if appt_doctor == doc.id|stringformat:"s" %}selected{% endif %}>{{ doc.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-6 col-md-2">
+                                <select name="appt_status" class="form-select form-select-sm">
+                                    <option value="">همه وضعیت‌ها</option>
+                                    <option value="pending" {% if appt_status == 'pending' %}selected{% endif %}>در انتظار تأیید</option>
+                                    <option value="confirmed" {% if appt_status == 'confirmed' %}selected{% endif %}>تأییدشده</option>
+                                    <option value="completed" {% if appt_status == 'completed' %}selected{% endif %}>تکمیل‌شده</option>
+                                    <option value="canceled" {% if appt_status == 'canceled' %}selected{% endif %}>لغوشده</option>
+                                </select>
+                            </div>
+                            <div class="col-6 col-md-2">
+                                <input type="text" name="appt_date" value="{{ appt_date }}" class="form-control form-control-sm" placeholder="تاریخ (شمسی)">
+                            </div>
+                            <div class="col-6 col-md-2 d-grid">
+                                <button type="submit" class="btn btn-sm btn-teal">اعمال فیلتر</button>
+                            </div>
+                        </form>
+
+                        <div class="table-responsive">
+                            <table class="table align-middle small">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>بیمار</th>
+                                        <th>پزشک</th>
+                                        <th>تاریخ و ساعت</th>
+                                        <th>وضعیت</th>
+                                        <th>تغییر وضعیت / زمان</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for appt in appointments_page %}
+                                    <tr>
+                                        <td>{{ appt.id }}</td>
+                                        <td>
+                                            <div class="fw-bold">{{ appt.patient.name }}</div>
+                                            <small class="text-muted">{{ appt.patient.phone }} | م: {{ appt.patient.national_id }}</small>
+                                        </td>
+                                        <td>{{ appt.doctor.name }}</td>
+                                        <td>
+                                            <div>{{ appt.jalali_date }}</div>
+                                            <span class="badge bg-light text-dark border">{{ appt.time|time:"H:i" }}</span>
+                                        </td>
+                                        <td>
+                                            {% if appt.status == 'confirmed' %}<span class="badge bg-success">تأییدشده</span>
+                                            {% elif appt.status == 'completed' %}<span class="badge bg-primary">تکمیل‌شده</span>
+                                            {% elif appt.status == 'canceled' %}<span class="badge bg-danger">لغوشده</span>
+                                            {% else %}<span class="badge bg-warning text-dark">در انتظار تأیید</span>{% endif %}
+                                        </td>
+                                        <td>
+                                            <form method="POST" class="d-flex flex-wrap gap-1">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="form_type" value="update_appointment">
+                                                <input type="hidden" name="appointment_id" value="{{ appt.id }}">
+                                                <input type="text" name="new_date" value="{{ appt.jalali_date }}" class="form-control form-control-sm" style="width: 95px;" title="تاریخ">
+                                                <input type="time" name="new_time" value="{{ appt.time|time:'H:i' }}" class="form-control form-control-sm" style="width: 82px;" title="ساعت">
+                                                <select name="status" class="form-select form-select-sm" style="width: 115px;">
+                                                    <option value="pending" {% if appt.status == 'pending' %}selected{% endif %}>در انتظار</option>
+                                                    <option value="confirmed" {% if appt.status == 'confirmed' %}selected{% endif %}>تأیید نوبت</option>
+                                                    <option value="completed" {% if appt.status == 'completed' %}selected{% endif %}>تکمیل درمان</option>
+                                                    <option value="canceled" {% if appt.status == 'canceled' %}selected{% endif %}>لغو نوبت</option>
+                                                </select>
+                                                <button type="submit" class="btn btn-sm btn-dark">ذخیره</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr><td colspan="6" class="text-center py-4 text-muted">نوبتی مطابق فیلترهای شما یافت نشد.</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- ======================= تب ۳: مدیریت پزشکان ======================= -->
+            {% if active_tab == 'doctors' %}
+            <div class="row g-4">
+                {% if staff_role == 'owner' %}
+                <div class="col-12 col-xl-4">
+                    <div class="panel-card">
+                        <h6 class="fw-bold mb-3"><i class="fa-solid fa-user-plus ms-1" style="color: var(--m-teal);"></i> افزودن / ویرایش پزشک</h6>
+                        <form method="POST" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <input type="hidden" name="form_type" value="save_doctor">
+                            <input type="hidden" name="doctor_id" id="edit_doc_id" value="">
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold">نام و نام خانوادگی پزشک</label>
+                                <input type="text" name="name" id="edit_doc_name" class="form-control" placeholder="مثلاً: دکتر سارا احمدی" required>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold">تخصص</label>
+                                <input type="text" name="specialty" id="edit_doc_spec" class="form-control" placeholder="مثلاً: متخصص درمان ریشه و زیبایی" required>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold">شماره همراه پزشک (کد ورود به پنل پزشک)</label>
+                                <input type="text" name="phone" id="edit_doc_phone" class="form-control" placeholder="0912..." required>
+                            </div>
+                            <div class="row g-2 mb-2">
+                                <div class="col-6">
+                                    <label class="form-label small fw-bold">روزهای حضور</label>
+                                    <input type="text" name="working_days" id="edit_doc_days" value="شنبه تا چهارشنبه" class="form-control">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small fw-bold">ساعات کاری</label>
+                                    <input type="text" name="working_hours" id="edit_doc_hours" value="۰۹:۰۰ تا ۲۰:۰۰" class="form-control">
+                                </div>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold">رزومه و توضیحات</label>
+                                <textarea name="bio" id="edit_doc_bio" rows="2" class="form-control"></textarea>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold">تصویر پروفایل</label>
+                                <input type="file" name="profile_image" accept="image/*" class="form-control">
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" name="is_active" id="edit_doc_active" checked>
+                                <label class="form-check-label small fw-bold" for="edit_doc_active">نمایش فعال در سایت عمومی</label>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-teal flex-grow-1">ذخیره اطلاعات پزشک</button>
+                                <button type="reset" class="btn btn-outline-secondary" onclick="document.getElementById('edit_doc_id').value=''">پاک‌سازی</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="col-12 {% if staff_role == 'owner' %}col-xl-8{% endif %}">
+                    <div class="panel-card">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                            <h6 class="fw-bold mb-0">فهرست پزشکان کلینیک</h6>
+                            <form method="GET" class="d-flex gap-2">
+                                <input type="hidden" name="tab" value="doctors">
+                                <input type="text" name="doc_q" value="{{ doc_q }}" class="form-control form-control-sm" placeholder="جست‌وجوی نام یا تخصص...">
+                                <button type="submit" class="btn btn-sm btn-teal">جست‌وجو</button>
+                            </form>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table align-middle small">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>پزشک</th>
+                                        <th>تخصص</th>
+                                        <th>شماره تماس</th>
+                                        <th>برنامه حضور</th>
+                                        <th>وضعیت</th>
+                                        {% if staff_role == 'owner' %}<th>عملیات</th>{% endif %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for doc in doctors_list %}
+                                    <tr>
+                                        <td class="fw-bold">{{ doc.name }}</td>
+                                        <td>{{ doc.specialty }}</td>
+                                        <td>{{ doc.phone }}</td>
+                                        <td>{{ doc.working_days }} ({{ doc.working_hours }})</td>
+                                        <td>
+                                            {% if doc.is_active %}
+                                                <span class="badge bg-success">فعال</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">غیرفعال</span>
+                                            {% endif %}
+                                        </td>
+                                        {% if staff_role == 'owner' %}
+                                        <td>
+                                            <div class="d-flex gap-1">
+                                                <button type="button" class="btn btn-sm btn-outline-primary"
+                                                    onclick="fillDoctorEdit('{{ doc.id }}','{{ doc.name|escapejs }}','{{ doc.specialty|escapejs }}','{{ doc.phone|escapejs }}','{{ doc.working_days|escapejs }}','{{ doc.working_hours|escapejs }}','{{ doc.bio|default:''|escapejs }}', {{ doc.is_active|yesno:'true,false' }})">
+                                                    ویرایش
+                                                </button>
+                                                <form method="POST" class="m-0">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="form_type" value="toggle_doctor">
+                                                    <input type="hidden" name="doctor_id" value="{{ doc.id }}">
+                                                    <button type="submit" class="btn btn-sm btn-outline-warning">تغییر وضعیت</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                        {% endif %}
+                                    </tr>
+                                    {% empty %}
+                                    <tr><td colspan="6" class="text-center py-4 text-muted">پزشکی ثبت نشده است.</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- ======================= تب ۴: مدیریت بیماران ======================= -->
+            {% if active_tab == 'patients' %}
+            <div class="panel-card">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                    <h6 class="fw-bold mb-0">فهرست بیماران ثبت‌شده در کلینیک</h6>
+                    <form method="GET" class="d-flex gap-2">
+                        <input type="hidden" name="tab" value="patients">
+                        <input type="text" name="pat_q" value="{{ pat_q }}" class="form-control form-control-sm" placeholder="جست‌وجو با نام، کدملی یا موبایل...">
+                        <button type="submit" class="btn btn-sm btn-teal">جست‌وجو</button>
+                    </form>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table align-middle small">
+                        <thead class="table-light">
+                            <tr>
+                                <th>شماره پرونده</th>
+                                <th>نام بیمار</th>
+                                <th>کد ملی</th>
+                                <th>شماره همراه</th>
+                                <th>تعداد نوبت‌ها</th>
+                                <th>ویرایش اطلاعات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pat in patients_page %}
+                            <tr>
+                                <td>#{{ pat.id }}</td>
+                                <td class="fw-bold">{{ pat.name }}</td>
+                                <td>{{ pat.national_id }}</td>
+                                <td>{{ pat.phone }}</td>
+                                <td><span class="badge bg-info text-dark">{{ pat.appt_count }} نوبت</span></td>
+                                <td>
+                                    <form method="POST" class="d-flex flex-wrap gap-1">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="form_type" value="update_patient">
+                                        <input type="hidden" name="patient_id" value="{{ pat.id }}">
+                                        <input type="text" name="name" value="{{ pat.name }}" class="form-control form-control-sm" style="width: 120px;">
+                                        <input type="text" name="national_id" value="{{ pat.national_id }}" class="form-control form-control-sm" style="width: 105px;">
+                                        <input type="text" name="phone" value="{{ pat.phone }}" class="form-control form-control-sm" style="width: 110px;">
+                                        {% if staff_role == 'owner' %}
+                                        <input type="text" name="medical_notes" value="{{ pat.medical_notes|default:'' }}" class="form-control form-control-sm" style="width: 150px;" placeholder="یادداشت پزشکی محرمانه">
+                                        {% endif %}
+                                        <button type="submit" class="btn btn-sm btn-dark">ذخیره</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="6" class="text-center py-4 text-muted">بیماری یافت نشد.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- ======================= تب ۵: مدیریت کارکنان و دسترسی‌ها ======================= -->
+            {% if active_tab == 'staff' and staff_role == 'owner' %}
+            <div class="row g-4">
+                <div class="col-12 col-lg-4">
+                    <div class="panel-card">
+                        <h6 class="fw-bold mb-3">تعریف حساب کارکنان و تعیین نقش</h6>
+                        <form method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="form_type" value="save_staff">
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold">نام و نام خانوادگی</label>
+                                <input type="text" name="full_name" class="form-control" required>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold">شماره همراه / نام کاربری</label>
+                                <input type="text" name="phone" class="form-control" required>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold">نقش و سطح دسترسی</label>
+                                <select name="role" class="form-select">
+                                    <option value="receptionist">منشی / پذیرش (دسترسی به نوبت‌ها و بیماران)</option>
+                                    <option value="owner">مدیر مالک (دسترسی کامل به کل سامانه)</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold">رمز عبور ورود به پنل</label>
+                                <input type="password" name="password" class="form-control" placeholder="رمز عبور جدید">
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" name="is_active" id="staffActive" checked>
+                                <label class="form-check-label small fw-bold" for="staffActive">حساب فعال باشد</label>
+                            </div>
+                            <button type="submit" class="btn btn-teal w-100">ذخیره حساب و سطح دسترسی</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-8">
+                    <div class="panel-card">
+                        <h6 class="fw-bold mb-3">فهرست مدیران و کارکنان کلینیک</h6>
+                        <div class="table-responsive">
+                            <table class="table align-middle small">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>نام و نام خانوادگی</th>
+                                        <th>نام کاربری / شماره</th>
+                                        <th>نقش سازمانی</th>
+                                        <th>وضعیت</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for st in staff_list %}
+                                    <tr>
+                                        <td class="fw-bold">{{ st.full_name }}</td>
+                                        <td>{{ st.phone }}</td>
+                                        <td><span class="badge bg-info text-dark">{{ st.get_role_display }}</span></td>
+                                        <td>{% if st.is_active %}<span class="badge bg-success">فعال</span>{% else %}<span class="badge bg-danger">غیرفعال</span>{% endif %}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr><td colspan="4" class="text-center py-4 text-muted">حساب کارمندی ثبت نشده است.</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- ======================= تب ۶: تنظیمات کلینیک ======================= -->
+            {% if active_tab == 'settings' and staff_role == 'owner' %}
+            <div class="panel-card">
+                <h6 class="fw-bold mb-3">تنظیمات عمومی کلینیک ماهلین</h6>
+                <form method="POST" class="row g-3">
+                    {% csrf_token %}
+                    <input type="hidden" name="form_type" value="save_settings">
+                    <div class="col-12 col-md-4">
+                        <label class="form-label small fw-bold">نام کلینیک</label>
+                        <input type="text" name="clinic_name" value="{{ clinic.clinic_name }}" class="form-control">
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label class="form-label small fw-bold">شعار کلینیک</label>
+                        <input type="text" name="slogan" value="{{ clinic.slogan }}" class="form-control">
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label class="form-label small fw-bold">شماره تماس کلینیک</label>
+                        <input type="text" name="phone" value="{{ clinic.phone }}" class="form-control">
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label small fw-bold">ساعات کاری کلینیک</label>
+                        <input type="text" name="working_hours" value="{{ clinic.working_hours }}" class="form-control">
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label small fw-bold">اطلاعیه روزهای تعطیل</label>
+                        <input type="text" name="holidays_notice" value="{{ clinic.holidays_notice }}" class="form-control">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-bold">نشانی دقیق کلینیک</label>
+                        <input type="text" name="address" value="{{ clinic.address }}" class="form-control">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-bold">قوانین عمومی نوبت‌دهی</label>
+                        <textarea name="booking_rules" rows="2" class="form-control">{{ clinic.booking_rules }}</textarea>
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-teal px-4">ذخیره تغییرات در پایگاه داده</button>
+                    </div>
+                </form>
+            </div>
+            {% endif %}
+
+            <!-- ======================= تب ۷: گزارش امنیتی رویدادها ======================= -->
+            {% if active_tab == 'logs' and staff_role == 'owner' %}
+            <div class="panel-card">
+                <h6 class="fw-bold mb-3">ثبت رویدادهای مهم مدیریتی و امنیتی (Audit Log)</h6>
+                <div class="table-responsive">
+                    <table class="table align-middle small">
+                        <thead class="table-light">
+                            <tr>
+                                <th>کاربر انجام‌دهنده</th>
+                                <th>نوع عملیات</th>
+                                <th>جزئیات</th>
+                                <th>زمان ثبت</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in audit_logs %}
+                            <tr>
+                                <td class="fw-bold">{{ log.actor }}</td>
+                                <td><span class="badge bg-secondary">{{ log.action_type }}</span></td>
+                                <td>{{ log.details }}</td>
+                                <td dir="ltr" class="text-end">{{ log.created_at|date:"Y-m-d H:i" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-center py-4 text-muted">رویدادی ثبت نشده است.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function fillDoctorEdit(id, name, spec, phone, days, hours, bio, isActive) {
+    document.getElementById('edit_doc_id').value = id;
+    document.getElementById('edit_doc_name').value = name;
+    document.getElementById('edit_doc_spec').value = spec;
+    document.getElementById('edit_doc_phone').value = phone;
+    document.getElementById('edit_doc_days').value = days;
+    document.getElementById('edit_doc_hours').value = hours;
+    document.getElementById('edit_doc_bio').value = bio;
+    document.getElementById('edit_doc_active').checked = isActive;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
