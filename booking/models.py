@@ -1,6 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import User
 import random
+import string
+
+
+def generate_tracking_code():
+    digits = ''.join(random.choices(string.digits, k=6))
+    return f"MHL-{digits}"
 
 
 class Doctor(models.Model):
@@ -9,8 +15,13 @@ class Doctor(models.Model):
     phone = models.CharField(max_length=15, verbose_name="شماره تماس")
     profile_image = models.ImageField(upload_to='doctors/', null=True, blank=True, verbose_name="عکس پروفایل")
     bio = models.TextField(blank=True, null=True, default="", verbose_name="سوابق و توضیحات")
-    working_days = models.CharField(max_length=150, default="شنبه تا چهارشنبه", verbose_name="روزهای حضور")
-    working_hours = models.CharField(max_length=100, default="۰۹:۰۰ تا ۲۰:۰۰", verbose_name="ساعات حضور")
+    working_days = models.CharField(max_length=150, default="شنبه تا چهارشنبه", verbose_name="عنوان روزهای حضور")
+    working_hours = models.CharField(max_length=100, default="۰۹:۰۰ تا ۲۰:۰۰", verbose_name="عنوان ساعات حضور")
+    # فیلدهای ساختاریافته برای محاسبه دقیق تقویم و ساعت‌های آزاد
+    work_days_mask = models.CharField(max_length=30, default="0,1,2,3,4", verbose_name="روزهای کاری هفته (0=شنبه تا 6=جمعه)")
+    work_start = models.CharField(max_length=5, default="09:00", verbose_name="ساعت شروع کار (HH:MM)")
+    work_end = models.CharField(max_length=5, default="20:00", verbose_name="ساعت پایان کار (HH:MM)")
+    slot_duration = models.PositiveIntegerField(default=30, verbose_name="مدت هر نوبت (دقیقه)")
     is_active = models.BooleanField(default=True, verbose_name="فعال در سایت؟")
 
     def __str__(self):
@@ -19,6 +30,24 @@ class Doctor(models.Model):
     class Meta:
         verbose_name = "پزشک"
         verbose_name_plural = "پزشکان"
+
+
+class DoctorTimeOff(models.Model):
+    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name='time_offs', verbose_name="پزشک")
+    date = models.DateField(verbose_name="تاریخ عدم حضور / مرخصی")
+    is_full_day = models.BooleanField(default=True, verbose_name="مرخصی کامل روزانه؟")
+    start_time = models.TimeField(null=True, blank=True, verbose_name="ساعت شروع مسدودسازی")
+    end_time = models.TimeField(null=True, blank=True, verbose_name="ساعت پایان مسدودسازی")
+    reason = models.CharField(max_length=200, blank=True, default="مرخصی / عدم حضور پزشک", verbose_name="علت")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.doctor.name} - {self.date}"
+
+    class Meta:
+        verbose_name = "مرخصی و زمان مسدود پزشک"
+        verbose_name_plural = "مرخصی‌ها و زمان‌های مسدود پزشکان"
+        ordering = ['-date']
 
 
 class Patient(models.Model):
@@ -41,18 +70,31 @@ class Appointment(models.Model):
         ('confirmed', 'تأییدشده'),
         ('completed', 'تکمیل‌شده'),
         ('canceled', 'لغوشده'),
+        ('no_show', 'عدم مراجعه'),
+    ]
+
+    SMS_STATUS_CHOICES = [
+        ('not_configured', 'سرویس پیامک پیکربندی نشده'),
+        ('sent', 'ارسال‌شده'),
+        ('failed', 'خطا در ارسال پیامک'),
     ]
 
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, verbose_name="بیمار")
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, verbose_name="پزشک")
     date = models.DateField(verbose_name="تاریخ نوبت")
-    time = models.TimeField(verbose_name="ساعت نوبت")
+    time = models.TimeField(verbose_name="ساعت شروع نوبت")
+    end_time = models.TimeField(null=True, blank=True, verbose_name="ساعت پایان نوبت")
+    tracking_code = models.CharField(max_length=20, default=generate_tracking_code, verbose_name="کد پیگیری")
     is_confirmed = models.BooleanField(default=False, verbose_name="تایید شده؟")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name="وضعیت")
     cancel_reason = models.CharField(max_length=255, blank=True, null=True, default="", verbose_name="دلیل لغو / توضیحات")
+    doctor_note = models.TextField(blank=True, null=True, default="", verbose_name="یادداشت درمانی پزشک")
+    sms_status = models.CharField(max_length=30, choices=SMS_STATUS_CHOICES, default='not_configured', verbose_name="وضعیت پیامک")
+    history_log = models.TextField(blank=True, null=True, default="", verbose_name="تاریخچه تغییرات نوبت")
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     def __str__(self):
-        return f"{self.patient.name} - {self.doctor.name} - {self.date} {self.time}"
+        return f"{self.tracking_code} | {self.patient.name} - {self.doctor.name} ({self.date} {self.time})"
 
     class Meta:
         verbose_name = "نوبت"
@@ -99,7 +141,8 @@ class ClinicSettings(models.Model):
     map_link = models.CharField(max_length=300, blank=True, default="", verbose_name="لینک مسیریابی")
     working_hours = models.CharField(max_length=200, default="شنبه تا چهارشنبه: ۰۹:۰۰ الی ۲۰:۰۰ | پنج‌شنبه‌ها: ۰۹:۰۰ الی ۱۴:۰۰", verbose_name="ساعات کاری")
     holidays_notice = models.CharField(max_length=250, blank=True, default="جمعه‌ها و تعطیلات رسمی کلینیک تعطیل است.", verbose_name="اطلاعیه تعطیلات")
-    booking_rules = models.TextField(default="لطفاً ۱۵ دقیقه پیش از زمان نوبت در کلینیک حضور داشته باشید.", verbose_name="قوانین عمومی نوبت‌دهی")
+    booking_rules = models.TextField(default="لطفاً ۱۵ دقیقه پیش از زمان نوبت در کلینیک حضور داشته باشید. لغو یا تغییر نوبت تا ۲ ساعت پیش از زمان ویزیت امکان‌پذیر است.", verbose_name="قوانین عمومی نوبت‌دهی")
+    default_slot_duration = models.PositiveIntegerField(default=30, verbose_name="مدت پیش‌فرض هر نوبت (دقیقه)")
 
     def __str__(self):
         return self.clinic_name
