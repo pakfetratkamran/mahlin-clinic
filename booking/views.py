@@ -435,7 +435,7 @@ def manager_dashboard(request):
             messages.info(request, f"حساب «{doc.name}» {status_txt} شد.")
             return redirect('/manager-panel/?tab=doctors')
 
-        # ۳. حذف کامل پزشک از سیستم (جدید)
+        # ۳. حذف کامل پزشک از سیستم
         elif form_type == 'delete_doctor':
             if role != 'owner':
                 messages.error(request, "فقط مدیر مالک مجاز به حذف پزشک است.")
