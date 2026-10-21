@@ -26,7 +26,6 @@
         * { font-family: 'Vazirmatn', sans-serif; }
         body { background-color: var(--m-bg); color: #243b53; overflow-x: hidden; }
 
-        /* چیدمان پنل با منوی کناری قابل جمع‌شدن */
         .admin-layout { display: flex; min-height: 100vh; }
 
         .admin-sidebar {
@@ -102,7 +101,6 @@
         }
         .btn-teal:hover { background-color: var(--m-teal-dark); color: #fff; }
 
-        /* نمودار میله‌ای واقعی */
         .bar-chart-box {
             height: 170px;
             display: flex;
@@ -127,7 +125,7 @@
 <body>
 
 <div class="admin-layout">
-    <!-- منوی کناری دسکتاپ (با قابلیت جمع‌شدن) -->
+    <!-- منوی کناری دسکتاپ -->
     <aside class="admin-sidebar" id="desktopSidebar">
         <div>
             <div class="p-3 d-flex align-items-center justify-content-between border-bottom border-secondary border-opacity-25">
@@ -284,7 +282,6 @@
             </div>
 
             <div class="row g-4">
-                <!-- برنامه نوبت‌های امروز -->
                 <div class="col-12 col-lg-7">
                     <div class="panel-card h-100">
                         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -328,7 +325,6 @@
                     </div>
                 </div>
 
-                <!-- خلاصه عملکرد هفتگی و ماهانه (داده‌های واقعی دیتابیس) -->
                 <div class="col-12 col-lg-5">
                     <div class="panel-card h-100">
                         <h6 class="fw-bold mb-3">نمودار نوبت‌های فعال ۷ روز اخیر</h6>
@@ -368,7 +364,6 @@
             <!-- ======================= تب ۲: مدیریت نوبت‌ها ======================= -->
             {% if active_tab == 'appointments' %}
             <div class="row g-4">
-                <!-- فرم ثبت نوبت توسط مدیر/پذیرش -->
                 <div class="col-12 col-xl-4">
                     <div class="panel-card">
                         <h6 class="fw-bold mb-3"><i class="fa-solid fa-calendar-plus ms-1" style="color: var(--m-teal);"></i> ثبت نوبت جدید توسط مدیریت</h6>
@@ -412,7 +407,6 @@
                     </div>
                 </div>
 
-                <!-- فهرست، جست‌وجو و فیلتر نوبت‌ها -->
                 <div class="col-12 col-xl-8">
                     <div class="panel-card">
                         <h6 class="fw-bold mb-3">فهرست و مدیریت نوبت‌ها</h6>
@@ -505,7 +499,7 @@
             </div>
             {% endif %}
 
-            <!-- ======================= تب ۳: مدیریت پزشکان ======================= -->
+            <!-- ======================= تب ۳: مدیریت پزشکان (همراه با دکمه حذف) ======================= -->
             {% if active_tab == 'doctors' %}
             <div class="row g-4">
                 {% if staff_role == 'owner' %}
@@ -598,16 +592,31 @@
                                         </td>
                                         {% if staff_role == 'owner' %}
                                         <td>
-                                            <div class="d-flex gap-1">
+                                            <div class="d-flex flex-wrap gap-1">
+                                                <!-- دکمه ویرایش -->
                                                 <button type="button" class="btn btn-sm btn-outline-primary"
                                                     onclick="fillDoctorEdit('{{ doc.id }}','{{ doc.name|escapejs }}','{{ doc.specialty|escapejs }}','{{ doc.phone|escapejs }}','{{ doc.working_days|escapejs }}','{{ doc.working_hours|escapejs }}','{{ doc.bio|default:''|escapejs }}', {{ doc.is_active|yesno:'true,false' }})">
-                                                    ویرایش
+                                                    <i class="fa-solid fa-pen"></i> ویرایش
                                                 </button>
+
+                                                <!-- دکمه فعال/غیرفعال -->
                                                 <form method="POST" class="m-0">
                                                     {% csrf_token %}
                                                     <input type="hidden" name="form_type" value="toggle_doctor">
                                                     <input type="hidden" name="doctor_id" value="{{ doc.id }}">
-                                                    <button type="submit" class="btn btn-sm btn-outline-warning">تغییر وضعیت</button>
+                                                    <button type="submit" class="btn btn-sm btn-outline-warning text-dark">
+                                                        {% if doc.is_active %}غیرفعال{% else %}فعال‌سازی{% endif %}
+                                                    </button>
+                                                </form>
+
+                                                <!-- دکمه حذف کامل پزشک (جدید) -->
+                                                <form method="POST" class="m-0" onsubmit="return confirm('آیا از حذف کامل «{{ doc.name|escapejs }}» و تمام نوبت‌های مرتبط با ایشان مطمئن هستید؟');">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="form_type" value="delete_doctor">
+                                                    <input type="hidden" name="doctor_id" value="{{ doc.id }}">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="حذف کامل پزشک">
+                                                        <i class="fa-solid fa-trash-can"></i> حذف
+                                                    </button>
                                                 </form>
                                             </div>
                                         </td>
