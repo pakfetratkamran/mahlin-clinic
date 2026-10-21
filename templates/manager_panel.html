@@ -135,7 +135,7 @@
                     </span>
                     <span class="fw-bold">{{ clinic.clinic_name }}</span>
                 </div>
-                <button class="btn btn-sm btn-outline-light border-0" onclick="document.getElementById('desktopSidebar').classList.toggle('collapsed')" title="جمع/باز کردن منو">
+                <button class="btn btn-sm btn-outline-light border-0" onclick="document.getElementById('desktopSidebar').classList.toggle('collapsed')">
                     <i class="fa-solid fa-bars"></i>
                 </button>
             </div>
@@ -148,7 +148,7 @@
                     <i class="fa-regular fa-calendar-check"></i> <span class="hide-on-collapse">مدیریت نوبت‌ها</span>
                 </a>
                 <a href="?tab=doctors" class="sidebar-link {% if active_tab == 'doctors' %}active{% endif %}">
-                    <i class="fa-solid fa-user-doctor"></i> <span class="hide-on-collapse">مدیریت پزشکان</span>
+                    <i class="fa-solid fa-user-doctor"></i> <span class="hide-on-collapse">مدیریت پزشکان و تقویم</span>
                 </a>
                 <a href="?tab=patients" class="sidebar-link {% if active_tab == 'patients' %}active{% endif %}">
                     <i class="fa-solid fa-users"></i> <span class="hide-on-collapse">مدیریت بیماران</span>
@@ -179,7 +179,6 @@
 
     <!-- بخش اصلی پنل -->
     <div class="admin-main">
-        <!-- نوار بالایی -->
         <header class="admin-topbar sticky-top">
             <div class="d-flex align-items-center gap-3">
                 <button class="btn btn-light border d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#mobileAdminMenu">
@@ -187,7 +186,7 @@
                 </button>
                 <div>
                     <h6 class="fw-bold mb-0" style="color: var(--m-navy);">پنل مدیریت اختصاصی {{ clinic.clinic_name }}</h6>
-                    <small class="text-muted">امروز: {{ today_jalali }}</small>
+                    <small class="text-muted">امروز (به وقت ایران): {{ today_jalali }}</small>
                 </div>
             </div>
 
@@ -200,29 +199,6 @@
             </div>
         </header>
 
-        <!-- منوی موبایل پنل مدیریت -->
-        <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileAdminMenu" style="background: var(--m-navy); color: #fff; max-width: 270px;">
-            <div class="offcanvas-header border-bottom border-secondary border-opacity-25">
-                <h6 class="offcanvas-title fw-bold text-white">{{ clinic.clinic_name }}</h6>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
-            </div>
-            <div class="offcanvas-body p-2">
-                <a href="?tab=dashboard" class="sidebar-link {% if active_tab == 'dashboard' %}active{% endif %}"><i class="fa-solid fa-chart-pie"></i> داشبورد آماری</a>
-                <a href="?tab=appointments" class="sidebar-link {% if active_tab == 'appointments' %}active{% endif %}"><i class="fa-regular fa-calendar-check"></i> مدیریت نوبت‌ها</a>
-                <a href="?tab=doctors" class="sidebar-link {% if active_tab == 'doctors' %}active{% endif %}"><i class="fa-solid fa-user-doctor"></i> مدیریت پزشکان</a>
-                <a href="?tab=patients" class="sidebar-link {% if active_tab == 'patients' %}active{% endif %}"><i class="fa-solid fa-users"></i> مدیریت بیماران</a>
-                {% if staff_role == 'owner' %}
-                <a href="?tab=staff" class="sidebar-link {% if active_tab == 'staff' %}active{% endif %}"><i class="fa-solid fa-user-lock"></i> کارکنان و دسترسی‌ها</a>
-                <a href="?tab=settings" class="sidebar-link {% if active_tab == 'settings' %}active{% endif %}"><i class="fa-solid fa-sliders"></i> تنظیمات کلینیک</a>
-                <a href="?tab=logs" class="sidebar-link {% if active_tab == 'logs' %}active{% endif %}"><i class="fa-solid fa-shield-halved"></i> گزارش امنیتی</a>
-                {% endif %}
-                <hr class="border-secondary">
-                <a href="/" class="sidebar-link"><i class="fa-solid fa-globe"></i> مشاهده سایت</a>
-                <a href="/logout/" class="sidebar-link text-warning"><i class="fa-solid fa-power-off"></i> خروج از حساب</a>
-            </div>
-        </div>
-
-        <!-- محتوای متغیر تب‌ها -->
         <div class="container-fluid p-3 p-lg-4">
 
             {% if messages %}
@@ -293,6 +269,7 @@
                             <table class="table align-middle small">
                                 <thead class="table-light">
                                     <tr>
+                                        <th>کد پیگیری</th>
                                         <th>ساعت</th>
                                         <th>بیمار</th>
                                         <th>پزشک</th>
@@ -302,6 +279,7 @@
                                 <tbody>
                                     {% for appt in today_appointments %}
                                     <tr>
+                                        <td><span class="badge bg-light text-dark border">{{ appt.tracking_code }}</span></td>
                                         <td class="fw-bold">{{ appt.time|time:"H:i" }}</td>
                                         <td>{{ appt.patient.name }} <span class="text-muted">({{ appt.patient.phone }})</span></td>
                                         <td>{{ appt.doctor.name }}</td>
@@ -309,6 +287,7 @@
                                             {% if appt.status == 'confirmed' %}<span class="badge bg-success">تأییدشده</span>
                                             {% elif appt.status == 'completed' %}<span class="badge bg-primary">تکمیل‌شده</span>
                                             {% elif appt.status == 'canceled' %}<span class="badge bg-danger">لغوشده</span>
+                                            {% elif appt.status == 'no_show' %}<span class="badge bg-secondary">عدم مراجعه</span>
                                             {% else %}<span class="badge bg-warning text-dark">در انتظار تأیید</span>{% endif %}
                                         </td>
                                     </tr>
@@ -341,21 +320,6 @@
                             <span style="font-size: 0.72rem;">{{ item.label }}</span>
                             {% endfor %}
                         </div>
-
-                        <div class="row g-2 mt-4">
-                            <div class="col-6">
-                                <div class="p-3 rounded-3 bg-light text-center">
-                                    <div class="fw-bold fs-4" style="color: var(--m-teal);">{{ weekly_total }}</div>
-                                    <small class="text-muted">نوبت‌های ۷ روز گذشته</small>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="p-3 rounded-3 bg-light text-center">
-                                    <div class="fw-bold fs-4" style="color: var(--m-navy);">{{ monthly_total }}</div>
-                                    <small class="text-muted">نوبت‌های ۳۰ روز گذشته</small>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -366,7 +330,7 @@
             <div class="row g-4">
                 <div class="col-12 col-xl-4">
                     <div class="panel-card">
-                        <h6 class="fw-bold mb-3"><i class="fa-solid fa-calendar-plus ms-1" style="color: var(--m-teal);"></i> ثبت نوبت جدید توسط مدیریت</h6>
+                        <h6 class="fw-bold mb-3"><i class="fa-solid fa-calendar-plus ms-1" style="color: var(--m-teal);"></i> ثبت نوبت تلفنی / حضوری</h6>
                         <form method="POST">
                             {% csrf_token %}
                             <input type="hidden" name="form_type" value="create_appointment">
@@ -388,13 +352,13 @@
                                 <label class="form-label small fw-bold">انتخاب پزشک فعال</label>
                                 <select name="doctor_id" class="form-select" required>
                                     {% for doc in all_active_doctors %}
-                                    <option value="{{ doc.id }}">{{ doc.name }} ({{ doc.specialty }})</option>
+                                    <option value="{{ doc.id }}">{{ doc.name }} (نوبت‌های {{ doc.slot_duration }} دقیقه‌ای)</option>
                                     {% endfor %}
                                 </select>
                             </div>
                             <div class="row g-2 mb-3">
                                 <div class="col-7">
-                                    <label class="form-label small fw-bold">تاریخ (مثال: {{ today_jalali }})</label>
+                                    <label class="form-label small fw-bold">تاریخ ({{ today_jalali }})</label>
                                     <input type="text" name="date" value="{{ today_jalali }}" class="form-control" required>
                                 </div>
                                 <div class="col-5">
@@ -409,11 +373,11 @@
 
                 <div class="col-12 col-xl-8">
                     <div class="panel-card">
-                        <h6 class="fw-bold mb-3">فهرست و مدیریت نوبت‌ها</h6>
+                        <h6 class="fw-bold mb-3">فهرست و مدیریت تمام نوبت‌ها</h6>
                         <form method="GET" class="row g-2 mb-3">
                             <input type="hidden" name="tab" value="appointments">
                             <div class="col-12 col-md-3">
-                                <input type="text" name="appt_q" value="{{ appt_q }}" class="form-control form-control-sm" placeholder="جست‌وجوی نام، کدملی یا کد...">
+                                <input type="text" name="appt_q" value="{{ appt_q }}" class="form-control form-control-sm" placeholder="نام، کدملی یا کد پیگیری...">
                             </div>
                             <div class="col-6 col-md-3">
                                 <select name="appt_doctor" class="form-select form-select-sm">
@@ -429,6 +393,7 @@
                                     <option value="pending" {% if appt_status == 'pending' %}selected{% endif %}>در انتظار تأیید</option>
                                     <option value="confirmed" {% if appt_status == 'confirmed' %}selected{% endif %}>تأییدشده</option>
                                     <option value="completed" {% if appt_status == 'completed' %}selected{% endif %}>تکمیل‌شده</option>
+                                    <option value="no_show" {% if appt_status == 'no_show' %}selected{% endif %}>عدم مراجعه</option>
                                     <option value="canceled" {% if appt_status == 'canceled' %}selected{% endif %}>لغوشده</option>
                                 </select>
                             </div>
@@ -444,7 +409,7 @@
                             <table class="table align-middle small">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>#</th>
+                                        <th>کد پیگیری</th>
                                         <th>بیمار</th>
                                         <th>پزشک</th>
                                         <th>تاریخ و ساعت</th>
@@ -455,7 +420,7 @@
                                 <tbody>
                                     {% for appt in appointments_page %}
                                     <tr>
-                                        <td>{{ appt.id }}</td>
+                                        <td><span class="badge bg-dark">{{ appt.tracking_code }}</span></td>
                                         <td>
                                             <div class="fw-bold">{{ appt.patient.name }}</div>
                                             <small class="text-muted">{{ appt.patient.phone }} | م: {{ appt.patient.national_id }}</small>
@@ -469,6 +434,7 @@
                                             {% if appt.status == 'confirmed' %}<span class="badge bg-success">تأییدشده</span>
                                             {% elif appt.status == 'completed' %}<span class="badge bg-primary">تکمیل‌شده</span>
                                             {% elif appt.status == 'canceled' %}<span class="badge bg-danger">لغوشده</span>
+                                            {% elif appt.status == 'no_show' %}<span class="badge bg-secondary">عدم مراجعه</span>
                                             {% else %}<span class="badge bg-warning text-dark">در انتظار تأیید</span>{% endif %}
                                         </td>
                                         <td>
@@ -476,12 +442,13 @@
                                                 {% csrf_token %}
                                                 <input type="hidden" name="form_type" value="update_appointment">
                                                 <input type="hidden" name="appointment_id" value="{{ appt.id }}">
-                                                <input type="text" name="new_date" value="{{ appt.jalali_date }}" class="form-control form-control-sm" style="width: 95px;" title="تاریخ">
-                                                <input type="time" name="new_time" value="{{ appt.time|time:'H:i' }}" class="form-control form-control-sm" style="width: 82px;" title="ساعت">
+                                                <input type="text" name="new_date" value="{{ appt.jalali_date }}" class="form-control form-control-sm" style="width: 92px;">
+                                                <input type="time" name="new_time" value="{{ appt.time|time:'H:i' }}" class="form-control form-control-sm" style="width: 82px;">
                                                 <select name="status" class="form-select form-select-sm" style="width: 115px;">
                                                     <option value="pending" {% if appt.status == 'pending' %}selected{% endif %}>در انتظار</option>
                                                     <option value="confirmed" {% if appt.status == 'confirmed' %}selected{% endif %}>تأیید نوبت</option>
                                                     <option value="completed" {% if appt.status == 'completed' %}selected{% endif %}>تکمیل درمان</option>
+                                                    <option value="no_show" {% if appt.status == 'no_show' %}selected{% endif %}>عدم مراجعه</option>
                                                     <option value="canceled" {% if appt.status == 'canceled' %}selected{% endif %}>لغو نوبت</option>
                                                 </select>
                                                 <button type="submit" class="btn btn-sm btn-dark">ذخیره</button>
@@ -489,7 +456,7 @@
                                         </td>
                                     </tr>
                                     {% empty %}
-                                    <tr><td colspan="6" class="text-center py-4 text-muted">نوبتی مطابق فیلترهای شما یافت نشد.</td></tr>
+                                    <tr><td colspan="6" class="text-center py-4 text-muted">نوبتی یافت نشد.</td></tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
@@ -499,12 +466,12 @@
             </div>
             {% endif %}
 
-            <!-- ======================= تب ۳: مدیریت پزشکان (با دکمه حذف کنار ویرایش) ======================= -->
+            <!-- ======================= تب ۳: مدیریت پزشکان (با دکمه حذف کنار ویرایش + تنظیمات نوبت و مرخصی) ======================= -->
             {% if active_tab == 'doctors' %}
             <div class="row g-4">
                 {% if staff_role == 'owner' %}
                 <div class="col-12 col-xl-4">
-                    <div class="panel-card">
+                    <div class="panel-card mb-4">
                         <h6 class="fw-bold mb-3"><i class="fa-solid fa-user-plus ms-1" style="color: var(--m-teal);"></i> افزودن / ویرایش پزشک</h6>
                         <form method="POST" enctype="multipart/form-data">
                             {% csrf_token %}
@@ -516,20 +483,34 @@
                             </div>
                             <div class="mb-2">
                                 <label class="form-label small fw-bold">تخصص</label>
-                                <input type="text" name="specialty" id="edit_doc_spec" class="form-control" placeholder="مثلاً: متخصص درمان ریشه و زیبایی" required>
+                                <input type="text" name="specialty" id="edit_doc_spec" class="form-control" placeholder="مثلاً: متخصص درمان ریشه" required>
                             </div>
                             <div class="mb-2">
-                                <label class="form-label small fw-bold">شماره همراه پزشک (کد ورود به پنل پزشک)</label>
+                                <label class="form-label small fw-bold">شماره همراه پزشک (کد ورود)</label>
                                 <input type="text" name="phone" id="edit_doc_phone" class="form-control" placeholder="0912..." required>
                             </div>
                             <div class="row g-2 mb-2">
                                 <div class="col-6">
-                                    <label class="form-label small fw-bold">روزهای حضور</label>
+                                    <label class="form-label small fw-bold">عنوان روزهای حضور</label>
                                     <input type="text" name="working_days" id="edit_doc_days" value="شنبه تا چهارشنبه" class="form-control">
                                 </div>
                                 <div class="col-6">
-                                    <label class="form-label small fw-bold">ساعات کاری</label>
-                                    <input type="text" name="working_hours" id="edit_doc_hours" value="۰۹:۰۰ تا ۲۰:۰۰" class="form-control">
+                                    <label class="form-label small fw-bold">کد روزها (0=ش تا 5=پ)</label>
+                                    <input type="text" name="work_days_mask" id="edit_doc_mask" value="0,1,2,3,4" class="form-control" dir="ltr">
+                                </div>
+                            </div>
+                            <div class="row g-2 mb-2">
+                                <div class="col-4">
+                                    <label class="form-label small fw-bold">شروع کار</label>
+                                    <input type="time" name="work_start" id="edit_doc_start" value="09:00" class="form-control">
+                                </div>
+                                <div class="col-4">
+                                    <label class="form-label small fw-bold">پایان کار</label>
+                                    <input type="time" name="work_end" id="edit_doc_end" value="20:00" class="form-control">
+                                </div>
+                                <div class="col-4">
+                                    <label class="form-label small fw-bold">مدت نوبت (دقیقه)</label>
+                                    <input type="number" name="slot_duration" id="edit_doc_dur" value="30" min="10" max="120" step="5" class="form-control">
                                 </div>
                             </div>
                             <div class="mb-2">
@@ -549,22 +530,39 @@
                                 <button type="reset" class="btn btn-outline-secondary" onclick="resetDoctorForm()">پاک‌سازی</button>
                             </div>
                         </form>
+                    </div>
 
-                        <!-- دکمه حذف سریع در پایین فرم هنگام انتخاب پزشک برای ویرایش -->
-                        <form method="POST" id="form_delete_selected_doc" class="mt-2 d-none" onsubmit="return confirm('آیا از حذف کامل این پزشک مطمئن هستید؟');">
+                    <!-- ثبت مرخصی پزشک توسط مدیر -->
+                    <div class="panel-card">
+                        <h6 class="fw-bold mb-3"><i class="fa-solid fa-calendar-xmark ms-1 text-danger"></i> ثبت مرخصی و بستن تقویم پزشک</h6>
+                        <form method="POST">
                             {% csrf_token %}
-                            <input type="hidden" name="form_type" value="delete_doctor">
-                            <input type="hidden" name="doctor_id" id="delete_doc_id_input" value="">
-                            <button type="submit" class="btn btn-danger w-100">
-                                <i class="fa-solid fa-trash-can ms-1"></i> حذف کامل این پزشک
-                            </button>
+                            <input type="hidden" name="form_type" value="add_time_off">
+                            <input type="hidden" name="is_full_day" value="on">
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold">پزشک</label>
+                                <select name="doctor_id" class="form-select form-select-sm" required>
+                                    {% for doc in doctors_list %}
+                                    <option value="{{ doc.id }}">{{ doc.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold">تاریخ مرخصی (شمسی)</label>
+                                <input type="text" name="date" value="{{ today_jalali }}" class="form-control form-control-sm" required>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold">علت</label>
+                                <input type="text" name="reason" value="مرخصی پزشک" class="form-control form-control-sm">
+                            </div>
+                            <button type="submit" class="btn btn-sm btn-outline-danger w-100">مسدودسازی تاریخ برای این پزشک</button>
                         </form>
                     </div>
                 </div>
                 {% endif %}
 
                 <div class="col-12 {% if staff_role == 'owner' %}col-xl-8{% endif %}">
-                    <div class="panel-card">
+                    <div class="panel-card mb-4">
                         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
                             <h6 class="fw-bold mb-0">فهرست پزشکان کلینیک</h6>
                             <form method="GET" class="d-flex gap-2">
@@ -581,7 +579,7 @@
                                         <th>پزشک</th>
                                         <th>تخصص</th>
                                         <th>شماره تماس</th>
-                                        <th>برنامه حضور</th>
+                                        <th>برنامه حضور و نوبت</th>
                                         <th>وضعیت</th>
                                         {% if staff_role == 'owner' %}<th>عملیات</th>{% endif %}
                                     </tr>
@@ -592,7 +590,10 @@
                                         <td class="fw-bold">{{ doc.name }}</td>
                                         <td>{{ doc.specialty }}</td>
                                         <td>{{ doc.phone }}</td>
-                                        <td>{{ doc.working_days }} ({{ doc.working_hours }})</td>
+                                        <td>
+                                            <div>{{ doc.working_days }} ({{ doc.work_start }} تا {{ doc.work_end }})</div>
+                                            <span class="badge bg-light text-dark border">نوبت‌های {{ doc.slot_duration }} دقیقه‌ای</span>
+                                        </td>
                                         <td>
                                             {% if doc.is_active %}
                                                 <span class="badge bg-success">فعال</span>
@@ -605,11 +606,11 @@
                                             <div class="d-flex flex-wrap align-items-center gap-1">
                                                 <!-- ۱. دکمه ویرایش -->
                                                 <button type="button" class="btn btn-sm btn-primary"
-                                                    onclick="fillDoctorEdit('{{ doc.id }}','{{ doc.name|escapejs }}','{{ doc.specialty|escapejs }}','{{ doc.phone|escapejs }}','{{ doc.working_days|escapejs }}','{{ doc.working_hours|escapejs }}','{{ doc.bio|default:''|escapejs }}', {{ doc.is_active|yesno:'true,false' }})">
+                                                    onclick="fillDoctorEdit('{{ doc.id }}','{{ doc.name|escapejs }}','{{ doc.specialty|escapejs }}','{{ doc.phone|escapejs }}','{{ doc.working_days|escapejs }}','{{ doc.work_days_mask|escapejs }}','{{ doc.work_start|escapejs }}','{{ doc.work_end|escapejs }}','{{ doc.slot_duration }}','{{ doc.bio|default:''|escapejs }}', {{ doc.is_active|yesno:'true,false' }})">
                                                     ویرایش
                                                 </button>
 
-                                                <!-- ۲. دکمه حذف (دقیقاً بغل دکمه ویرایش) -->
+                                                <!-- ۲. دکمه حذف (دقیقاً کنار دکمه ویرایش) -->
                                                 <form method="POST" class="m-0 d-inline" onsubmit="return confirm('آیا از حذف کامل «{{ doc.name|escapejs }}» مطمئن هستید؟');">
                                                     {% csrf_token %}
                                                     <input type="hidden" name="form_type" value="delete_doctor">
@@ -639,6 +640,41 @@
                             </table>
                         </div>
                     </div>
+
+                    {% if doctor_leaves %}
+                    <div class="panel-card">
+                        <h6 class="fw-bold mb-3">فهرست مرخصی‌ها و روزهای مسدود پزشکان</h6>
+                        <div class="table-responsive">
+                            <table class="table align-middle small">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>پزشک</th>
+                                        <th>تاریخ</th>
+                                        <th>علت</th>
+                                        <th>حذف محدودیت</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for lv in doctor_leaves %}
+                                    <tr>
+                                        <td class="fw-bold">{{ lv.doctor.name }}</td>
+                                        <td>{{ lv.jalali_date }}</td>
+                                        <td>{{ lv.reason }}</td>
+                                        <td>
+                                            <form method="POST" class="m-0">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="form_type" value="delete_time_off">
+                                                <input type="hidden" name="toff_id" value="{{ lv.id }}">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">آزادسازی تاریخ</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
             {% endif %}
@@ -847,31 +883,23 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-function fillDoctorEdit(id, name, spec, phone, days, hours, bio, isActive) {
+function fillDoctorEdit(id, name, spec, phone, days, mask, start, end, dur, bio, isActive) {
     document.getElementById('edit_doc_id').value = id;
     document.getElementById('edit_doc_name').value = name;
     document.getElementById('edit_doc_spec').value = spec;
     document.getElementById('edit_doc_phone').value = phone;
     document.getElementById('edit_doc_days').value = days;
-    document.getElementById('edit_doc_hours').value = hours;
+    document.getElementById('edit_doc_mask').value = mask || '0,1,2,3,4';
+    document.getElementById('edit_doc_start').value = start || '09:00';
+    document.getElementById('edit_doc_end').value = end || '20:00';
+    document.getElementById('edit_doc_dur').value = dur || 30;
     document.getElementById('edit_doc_bio').value = bio;
     document.getElementById('edit_doc_active').checked = isActive;
-
-    var delForm = document.getElementById('form_delete_selected_doc');
-    var delInput = document.getElementById('delete_doc_id_input');
-    if (delForm && delInput) {
-        delInput.value = id;
-        delForm.classList.remove('d-none');
-    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function resetDoctorForm() {
     document.getElementById('edit_doc_id').value = '';
-    var delForm = document.getElementById('form_delete_selected_doc');
-    if (delForm) {
-        delForm.classList.add('d-none');
-    }
 }
 </script>
 </body>
