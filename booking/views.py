@@ -311,7 +311,6 @@ def manager_login(request):
     if request.user.is_authenticated and get_user_role(request.user) in ['owner', 'receptionist']:
         return redirect('manager_dashboard')
 
-    # بررسی وجود مالک در جدول جدید StaffProfile
     has_owner = StaffProfile.objects.filter(role='owner', is_active=True).exists()
 
     if request.method == 'POST':
@@ -319,7 +318,6 @@ def manager_login(request):
         password = request.POST.get('password', '').strip()
         full_name = request.POST.get('full_name', 'مدیر کلینیک ماهلین').strip()
 
-        # اگر هنوز مالکی ثبت نشده، همین حساب را به عنوان مالک کلینیک ثبت و فعال کن
         if not has_owner:
             if len(username) < 3 or len(password) < 4:
                 messages.error(request, "نام کاربری حداقل ۳ کاراکتر و رمز عبور باید حداقل ۴ کاراکتر باشد.")
@@ -370,6 +368,7 @@ def manager_dashboard(request):
     if request.method == 'POST':
         form_type = request.POST.get('form_type', '')
 
+        # ۱. افزودن یا ویرایش پزشک
         if form_type == 'save_doctor':
             if role != 'owner':
                 messages.error(request, "فقط مدیر مالک مجاز به تغییر اطلاعات پزشکان است.")
@@ -423,6 +422,7 @@ def manager_dashboard(request):
                 messages.success(request, f"پزشک جدید «{name}» با موفقیت به کلینیک اضافه شد.")
             return redirect('/manager-panel/?tab=doctors')
 
+        # ۲. فعال یا غیرفعال کردن پزشک
         elif form_type == 'toggle_doctor':
             if role != 'owner':
                 messages.error(request, "عدم دسترسی مجاز.")
@@ -435,6 +435,19 @@ def manager_dashboard(request):
             messages.info(request, f"حساب «{doc.name}» {status_txt} شد.")
             return redirect('/manager-panel/?tab=doctors')
 
+        # ۳. حذف کامل پزشک از سیستم (جدید)
+        elif form_type == 'delete_doctor':
+            if role != 'owner':
+                messages.error(request, "فقط مدیر مالک مجاز به حذف پزشک است.")
+                return redirect('/manager-panel/?tab=doctors')
+            doc = get_object_or_404(Doctor, id=request.POST.get('doctor_id'))
+            doc_name = doc.name
+            doc.delete()
+            record_audit(request.user, "حذف پزشک", f"پزشک «{doc_name}» به طور کامل از سامانه حذف شد.")
+            messages.warning(request, f"پزشک «{doc_name}» با موفقیت از سامانه حذف گردید.")
+            return redirect('/manager-panel/?tab=doctors')
+
+        # ۴. ثبت نوبت توسط مدیریت
         elif form_type == 'create_appointment':
             patient_name = request.POST.get('patient_name', '').strip()
             national_id = request.POST.get('national_id', '').strip()
@@ -476,6 +489,7 @@ def manager_dashboard(request):
             messages.success(request, "نوبت جدید با موفقیت ثبت و تأیید شد.")
             return redirect('/manager-panel/?tab=appointments')
 
+        # ۵. بروزرسانی وضعیت یا زمان نوبت
         elif form_type == 'update_appointment':
             appt = get_object_or_404(Appointment, id=request.POST.get('appointment_id'))
             new_status = request.POST.get('status', appt.status)
@@ -520,6 +534,7 @@ def manager_dashboard(request):
             messages.success(request, f"وضعیت نوبت «{appt.patient.name}» بروزرسانی شد.")
             return redirect('/manager-panel/?tab=appointments')
 
+        # ۶. ویرایش اطلاعات بیمار
         elif form_type == 'update_patient':
             pat = get_object_or_404(Patient, id=request.POST.get('patient_id'))
             new_name = request.POST.get('name', '').strip()
@@ -541,6 +556,7 @@ def manager_dashboard(request):
             messages.success(request, "اطلاعات بیمار با موفقیت بروزرسانی شد.")
             return redirect('/manager-panel/?tab=patients')
 
+        # ۷. تعریف یا ویرایش کارکنان
         elif form_type == 'save_staff':
             if role != 'owner':
                 messages.error(request, "فقط مدیر مالک مجاز به مدیریت کارکنان و دسترسی‌ها است.")
@@ -576,6 +592,7 @@ def manager_dashboard(request):
             messages.success(request, f"حساب کاربری «{full_name}» با موفقیت ذخیره شد.")
             return redirect('/manager-panel/?tab=staff')
 
+        # ۸. ذخیره تنظیمات کلینیک
         elif form_type == 'save_settings':
             if role != 'owner':
                 messages.error(request, "فقط مدیر مالک مجاز به تغییر تنظیمات کلینیک است.")
