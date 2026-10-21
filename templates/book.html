@@ -1,1 +1,325 @@
+{% extends 'base.html' %}
 
+{% block title %}رزرو آنلاین نوبت | {{ clinic.clinic_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .booking-box {
+        background: #ffffff;
+        border: 1px solid var(--mahlin-border);
+        border-radius: 22px;
+        padding: 24px;
+        box-shadow: 0 10px 30px rgba(16, 42, 67, 0.05);
+    }
+
+    .doc-select-card {
+        border: 2px solid var(--mahlin-border);
+        border-radius: 16px;
+        padding: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: #fff;
+    }
+
+    .doc-select-card.active {
+        border-color: var(--mahlin-teal);
+        background-color: var(--mahlin-teal-soft);
+    }
+
+    .days-scroll {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding-bottom: 10px;
+    }
+
+    .day-btn {
+        min-width: 105px;
+        border: 1.5px solid var(--mahlin-border);
+        border-radius: 14px;
+        padding: 10px 8px;
+        background: #fff;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        flex-shrink: 0;
+    }
+
+    .day-btn.active {
+        background: var(--mahlin-teal);
+        color: #fff;
+        border-color: var(--mahlin-teal);
+    }
+
+    .day-btn.disabled-day {
+        opacity: 0.5;
+        background: #f1f5f9;
+        cursor: not-allowed;
+    }
+
+    .slots-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+        gap: 10px;
+    }
+
+    .slot-btn {
+        border: 1.5px solid var(--mahlin-border);
+        border-radius: 12px;
+        padding: 11px 8px;
+        background: #ffffff;
+        font-weight: 700;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+
+    .slot-btn:hover:not(:disabled) {
+        border-color: var(--mahlin-teal);
+        background: var(--mahlin-teal-soft);
+    }
+
+    .slot-btn.selected {
+        background: var(--mahlin-teal);
+        color: #ffffff;
+        border-color: var(--mahlin-teal);
+    }
+
+    .slot-btn:disabled {
+        background: #f8fafc;
+        color: #94a3b8;
+        border-color: #e2e8f0;
+        cursor: not-allowed;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-9">
+
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-3">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="booking-box">
+                <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom pb-3 mb-4 gap-2">
+                    <div>
+                        <span class="badge rounded-pill px-3 py-2 mb-1" style="background: var(--mahlin-teal-soft); color: var(--mahlin-teal);">
+                            سامانه نوبت‌دهی برخط (به وقت ایران)
+                        </span>
+                        <h4 class="fw-bold mb-0" style="color: var(--mahlin-navy);">رزرو آنلاین نوبت دندان‌پزشکی</h4>
+                    </div>
+                    <div class="small text-muted">
+                        <i class="fa-solid fa-phone-volume ms-1"></i> حساب کاربری: <strong>{{ request.user.username }}</strong>
+                    </div>
+                </div>
+
+                {% if doctors %}
+                <form method="POST" id="bookingForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="doctor" id="inputDoctor" value="{{ selected_doctor_id }}">
+                    <input type="hidden" name="date" id="inputDate" value="">
+                    <input type="hidden" name="time" id="inputTime" value="">
+
+                    <!-- مرحله ۱: انتخاب پزشک -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold mb-3" style="color: var(--mahlin-navy);">
+                            <span class="badge rounded-circle ms-1" style="background: var(--mahlin-teal);">۱</span>
+                            پزشک موردنظر خود را انتخاب کنید:
+                        </h6>
+                        <div class="row g-3">
+                            {% for doc in doctors %}
+                            <div class="col-12 col-md-6">
+                                <div class="doc-select-card {% if doc.id == selected_doctor_id %}active{% endif %}"
+                                     onclick="selectDoctor({{ doc.id }}, this)">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <div class="fw-bold" style="color: var(--mahlin-navy);">{{ doc.name }}</div>
+                                            <div class="small text-muted">{{ doc.specialty }}</div>
+                                            <div class="small mt-1" style="color: var(--mahlin-teal);">
+                                                <i class="fa-regular fa-clock ms-1"></i> {{ doc.working_days }} ({{ doc.work_start }} تا {{ doc.work_end }})
+                                            </div>
+                                        </div>
+                                        <i class="fa-solid fa-circle-check fs-4" style="color: var(--mahlin-teal);"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- مرحله ۲: انتخاب روز مراجعه از تقویم پزشک -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold mb-2" style="color: var(--mahlin-navy);">
+                            <span class="badge rounded-circle ms-1" style="background: var(--mahlin-teal);">۲</span>
+                            انتخاب روز مراجعه (۱۴ روز آینده):
+                        </h6>
+                        <div id="daysContainer" class="days-scroll">
+                            <div class="text-muted small py-3">در حال بارگذاری تقویم کاری پزشک...</div>
+                        </div>
+                    </div>
+
+                    <!-- مرحله ۳: انتخاب ساعت آزاد -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="fw-bold mb-0" style="color: var(--mahlin-navy);">
+                                <span class="badge rounded-circle ms-1" style="background: var(--mahlin-teal);">۳</span>
+                                انتخاب ساعت آزاد ویزیت:
+                            </h6>
+                            <small id="slotDurationInfo" class="text-muted"></small>
+                        </div>
+                        <div id="slotsContainer" class="slots-grid">
+                            <div class="text-muted small py-3">لطفاً یک روز را انتخاب کنید.</div>
+                        </div>
+                    </div>
+
+                    <!-- مرحله ۴: تکمیل مشخصات بیمار و ثبت نهایی -->
+                    <div class="p-3 p-md-4 rounded-4 mb-3" style="background: var(--mahlin-bg); border: 1px solid var(--mahlin-border);">
+                        <h6 class="fw-bold mb-3" style="color: var(--mahlin-navy);">
+                            <span class="badge rounded-circle ms-1" style="background: var(--mahlin-teal);">۴</span>
+                            تأیید مشخصات بیمار:
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6">
+                                <label class="form-label small fw-bold">نام و نام خانوادگی بیمار *</label>
+                                <input type="text" name="name" value="{{ patient.name|default:'' }}" class="form-control rounded-3" placeholder="نام کامل بیمار" required>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label small fw-bold">کد ملی ۱۰ رقمی *</label>
+                                <input type="text" name="national_id" value="{{ patient.national_id|default:'' }}" maxlength="10" pattern="\d{10}" class="form-control rounded-3" placeholder="۱۰ رقم بدون خط تیره" required>
+                            </div>
+                        </div>
+                        <div class="small text-muted mt-3">
+                            <i class="fa-solid fa-circle-info ms-1" style="color: var(--mahlin-teal);"></i>
+                            {{ clinic.booking_rules }}
+                        </div>
+                    </div>
+
+                    <div id="bookingSummaryBar" class="alert alert-info rounded-3 small d-none mb-3"></div>
+
+                    <button type="submit" id="submitBookBtn" class="btn-mahlin-primary w-100 py-3" disabled>
+                        <i class="fa-regular fa-calendar-check"></i> تأیید و ثبت نهایی نوبت
+                    </button>
+                </form>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fa-solid fa-user-doctor fs-1 mb-3 text-muted"></i>
+                    <h6 class="fw-bold">در حال حاضر پزشک فعالی جهت نوبت‌دهی آنلاین ثبت نشده است.</h6>
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentDoctorId = document.getElementById('inputDoctor') ? document.getElementById('inputDoctor').value : null;
+let currentSelectedDate = '';
+
+function selectDoctor(docId, cardEl) {
+    currentDoctorId = docId;
+    document.getElementById('inputDoctor').value = docId;
+    document.getElementById('inputTime').value = '';
+    document.getElementById('submitBookBtn').disabled = true;
+
+    document.querySelectorAll('.doc-select-card').forEach(el => el.classList.remove('active'));
+    cardEl.classList.add('active');
+
+    loadDoctorSchedule(docId, '');
+}
+
+function loadDoctorSchedule(docId, targetDate) {
+    const daysBox = document.getElementById('daysContainer');
+    const slotsBox = document.getElementById('slotsContainer');
+    slotsBox.innerHTML = '<div class="text-muted small py-2">در حال استعلام ساعت‌های آزاد از سرور...</div>';
+
+    let url = `/api/available-slots/?doctor_id=${docId}`;
+    if (targetDate) {
+        url += `&date=${encodeURIComponent(targetDate)}`;
+    }
+
+    fetch(url)
+        .then(res => res.json())
+        .then(data => {
+            if (!data.ok) {
+                daysBox.innerHTML = `<div class="text-danger small">${data.error}</div>`;
+                slotsBox.innerHTML = '';
+                return;
+            }
+
+            currentSelectedDate = data.selected_date_gregorian;
+            document.getElementById('inputDate').value = currentSelectedDate;
+            document.getElementById('slotDurationInfo').innerText = `مدت هر ویزیت: ${data.doctor.slot_duration} دقیقه`;
+
+            // رندر نوار روزهای ۱۴ روز آینده
+            daysBox.innerHTML = '';
+            data.days.forEach(d => {
+                const btn = document.createElement('div');
+                const isSelected = (d.gregorian === currentSelectedDate);
+                btn.className = `day-btn ${isSelected ? 'active' : ''} ${!d.has_free ? 'disabled-day' : ''}`;
+                btn.innerHTML = `
+                    <div class="fw-bold small">${d.weekday}</div>
+                    <div class="my-1" style="font-size: 0.92rem;">${d.jalali_short}</div>
+                    <div style="font-size: 0.7rem;" class="${isSelected ? 'text-white' : (d.has_free ? 'text-success' : 'text-danger')}">${d.status_note}</div>
+                `;
+                btn.onclick = () => {
+                    document.getElementById('inputTime').value = '';
+                    document.getElementById('submitBookBtn').disabled = true;
+                    loadDoctorSchedule(docId, d.gregorian);
+                };
+                daysBox.appendChild(btn);
+            });
+
+            // رندر ساعت‌های روز انتخاب‌شده
+            slotsBox.innerHTML = '';
+            if (!data.slots || data.slots.length === 0) {
+                slotsBox.innerHTML = `<div class="text-danger small py-2" style="grid-column: 1 / -1;">${data.message}</div>`;
+                return;
+            }
+
+            data.slots.forEach(slot => {
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'slot-btn';
+                b.disabled = !slot.is_free;
+                b.innerHTML = `
+                    <div>${slot.time}</div>
+                    <div style="font-size: 0.68rem;">${slot.reason}</div>
+                `;
+                if (slot.is_free) {
+                    b.onclick = () => {
+                        document.querySelectorAll('.slot-btn').forEach(x => x.classList.remove('selected'));
+                        b.classList.add('selected');
+                        document.getElementById('inputTime').value = slot.time;
+                        document.getElementById('submitBookBtn').disabled = false;
+
+                        const sumBar = document.getElementById('bookingSummaryBar');
+                        sumBar.classList.remove('d-none');
+                        sumBar.innerHTML = `<strong>زمان انتخابی شما:</strong> ${data.selected_weekday} ${data.selected_date_jalali} ساعت ${slot.time} نزد ${data.doctor.name}`;
+                    };
+                }
+                slotsBox.appendChild(b);
+            });
+        })
+        .catch(() => {
+            slotsBox.innerHTML = '<div class="text-danger small">خطا در ارتباط با سرور. لطفاً صفحه را رفرش کنید.</div>';
+        });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (currentDoctorId) {
+        loadDoctorSchedule(currentDoctorId, '');
+    }
+});
+</script>
+{% endblock %}
