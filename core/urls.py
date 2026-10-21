@@ -9,6 +9,7 @@ urlpatterns = [
     path('', views.home_page, name='home'),
     path('login/', views.login_view, name='login'),
     path('verify/', views.verify_otp, name='verify_otp'),
+    path('book/', views.book_appointment, name='book'),
     path('book/', views.book_appointment, name='book_appointment'),
     path('api/available-slots/', views.api_available_slots, name='api_available_slots'),
     path('dashboard/', views.dashboard_router, name='dashboard_router'),
@@ -17,8 +18,6 @@ urlpatterns = [
     path('cancel/<int:appointment_id>/', views.cancel_appointment, name='cancel_appointment'),
     path('reschedule/<int:appointment_id>/', views.reschedule_appointment, name='reschedule_appointment'),
     path('logout/', views.logout_view, name='logout'),
-
-    # پنل مدیریت اختصاصی مالک و پذیرش
     path('manager-login/', views.manager_login, name='manager_login'),
     path('manager-panel/', views.manager_dashboard, name='manager_dashboard'),
 ]
