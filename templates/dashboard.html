@@ -1,86 +1,87 @@
 {% extends 'base.html' %}
 
-{% block title %}پنل کاربری بیمار | {{ clinic.clinic_name }}{% endblock %}
+{% block title %}پنل کاربری بیمار | کلینیک دندان‌پزشکی ماهلین{% endblock %}
 
 {% block content %}
 <div class="container py-4">
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <!-- هدر پنل بیمار -->
+    <div class="bg-white p-4 rounded-4 shadow-sm mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3" style="border: 1px solid var(--mahlin-border);">
         <div>
-            <h4 class="fw-bold mb-1" style="color: var(--mahlin-navy);">پنل نوبت‌های من</h4>
-            <p class="small text-muted mb-0">شماره همراه حساب: <strong>{{ request.user.username }}</strong> | امروز: {{ today_jalali }}</p>
+            <h4 class="fw-bold mb-1" style="color: var(--mahlin-navy);">
+                <i class="fa-solid fa-hospital-user ms-2" style="color: var(--mahlin-teal);"></i>پنل کاربری و نوبت‌های من
+            </h4>
+            <p class="small text-muted mb-0">شماره همراه حساب کاربری: <strong>{{ request.user.username }}</strong></p>
         </div>
         <div class="d-flex gap-2">
-            <a href="/book/" class="btn-mahlin-primary py-2 px-3">
-                <i class="fa-solid fa-plus"></i> رزرو نوبت جدید
+            <a href="/book/" class="btn-mahlin-primary py-2 px-4">
+                <i class="fa-regular fa-calendar-plus"></i> رزرو نوبت جدید
             </a>
-            <a href="/logout/" class="btn btn-outline-danger rounded-3 py-2 px-3">خروج</a>
+            <a href="/logout/" class="btn btn-outline-danger rounded-3 py-2 px-3 fw-bold">
+                <i class="fa-solid fa-power-off ms-1"></i> خروج
+            </a>
         </div>
     </div>
 
     {% if messages %}
         {% for message in messages %}
-        <div class="alert alert-info rounded-4 border-0 shadow-sm mb-3">{{ message }}</div>
+        <div class="alert alert-info rounded-4 border-0 shadow-sm mb-4">
+            <i class="fa-solid fa-circle-info ms-1"></i> {{ message }}
+        </div>
         {% endfor %}
     {% endif %}
 
-    <div class="row g-3">
+    <!-- فهرست نوبت‌های بیمار -->
+    <div class="row g-4">
         {% for appt in appointments %}
         <div class="col-12 col-lg-6">
-            <div class="bg-white p-4 rounded-4 h-100 shadow-sm" style="border: 1px solid var(--mahlin-border);">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                        <span class="badge bg-dark rounded-pill px-3 py-1 mb-1">کد پیگیری: {{ appt.tracking_code }}</span>
-                        <h5 class="fw-bold mb-0 mt-1" style="color: var(--mahlin-navy);">{{ appt.doctor.name }}</h5>
-                        <small class="text-muted">{{ appt.doctor.specialty }}</small>
-                    </div>
-                    <div>
-                        {% if appt.status == 'confirmed' %}
-                            <span class="badge bg-success px-3 py-2 rounded-pill">تأییدشده</span>
-                        {% elif appt.status == 'completed' %}
-                            <span class="badge bg-primary px-3 py-2 rounded-pill">تکمیل‌شده</span>
-                        {% elif appt.status == 'canceled' %}
-                            <span class="badge bg-danger px-3 py-2 rounded-pill">لغوشده</span>
-                        {% elif appt.status == 'no_show' %}
-                            <span class="badge bg-secondary px-3 py-2 rounded-pill">عدم مراجعه</span>
-                        {% else %}
-                            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">در انتظار تأیید</span>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="p-3 rounded-3 mb-3 small" style="background: var(--mahlin-bg);">
-                    <div class="row g-2">
-                        <div class="col-6"><strong>بیمار:</strong> {{ appt.patient.name }}</div>
-                        <div class="col-6"><strong>تاریخ:</strong> {{ appt.weekday_name }} {{ appt.jalali_date }}</div>
-                        <div class="col-6"><strong>ساعت ویزیت:</strong> {{ appt.time|time:"H:i" }}</div>
-                        <div class="col-6">
-                            <strong>اطلاع‌رسانی پیامکی:</strong>
-                            {% if appt.sms_status == 'sent' %}
-                                <span class="text-success">ارسال‌شده</span>
-                            {% elif appt.sms_status == 'failed' %}
-                                <span class="text-danger">عدم ارسال</span>
+            <div class="bg-white p-4 rounded-4 h-100 shadow-sm d-flex flex-column justify-content-between" style="border: 1px solid var(--mahlin-border);">
+                <div>
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="fw-bold mb-1" style="color: var(--mahlin-navy);">{{ appt.doctor.name }}</h5>
+                            <span class="badge rounded-pill px-3 py-1" style="background: var(--mahlin-teal-soft); color: var(--mahlin-teal);">
+                                {{ appt.doctor.specialty }}
+                            </span>
+                        </div>
+                        <div>
+                            {% if appt.status == 'canceled' %}
+                                <span class="badge bg-danger px-3 py-2 rounded-pill">لغوشده</span>
+                            {% elif appt.is_confirmed or appt.status == 'confirmed' %}
+                                <span class="badge bg-success px-3 py-2 rounded-pill">تأییدشده</span>
                             {% else %}
-                                <span class="text-muted">ثبت در پنل (پیامک غیرفعال)</span>
+                                <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">در انتظار تأیید</span>
                             {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="p-3 rounded-3 mb-3 small" style="background-color: var(--mahlin-bg); border: 1px solid var(--mahlin-border);">
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <span class="text-muted">نام بیمار:</span>
+                                <strong class="d-block text-dark">{{ appt.patient.name }}</strong>
+                            </div>
+                            <div class="col-6">
+                                <span class="text-muted">تاریخ مراجعه:</span>
+                                <strong class="d-block text-dark">{{ appt.jalali_date|default:appt.date }}</strong>
+                            </div>
+                            <div class="col-6">
+                                <span class="text-muted">ساعت ویزیت:</span>
+                                <strong class="d-block text-dark">{{ appt.time|time:"H:i"|default:appt.time }}</strong>
+                            </div>
+                            <div class="col-6">
+                                <span class="text-muted">وضعیت نوبت:</span>
+                                <strong class="d-block" style="color: var(--mahlin-teal);">ثبت‌شده در سامانه</strong>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {% if appt.can_modify %}
-                <div class="d-flex flex-wrap gap-2 mt-3">
-                    <button type="button" class="btn btn-sm btn-outline-primary rounded-3 px-3 py-2"
-                            onclick="openRescheduleModal({{ appt.id }}, {{ appt.doctor.id }}, '{{ appt.tracking_code }}')">
-                        <i class="fa-regular fa-clock ms-1"></i> تغییر زمان نوبت
-                    </button>
-
-                    <form method="POST" action="{% url 'cancel_appointment' appt.id %}" class="m-0"
-                          onsubmit="return confirm('آیا از لغو نوبت {{ appt.tracking_code }} مطمئن هستید؟');">
-                        {% csrf_token %}
-                        <input type="hidden" name="cancel_reason" value="لغو آنلاین توسط بیمار">
-                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-3 px-3 py-2">
-                            <i class="fa-solid fa-xmark ms-1"></i> لغو نوبت
-                        </button>
-                    </form>
+                {% if appt.status != 'canceled' %}
+                <div class="d-flex justify-content-end border-top pt-3">
+                    <a href="/cancel/{{ appt.id }}/" class="btn btn-sm btn-outline-danger rounded-3 px-3 py-2 fw-bold"
+                       onclick="return confirm('آیا از لغو این نوبت مطمئن هستید؟');">
+                        <i class="fa-solid fa-trash-can ms-1"></i> لغو این نوبت
+                    </a>
                 </div>
                 {% endif %}
             </div>
@@ -88,91 +89,17 @@
         {% empty %}
         <div class="col-12">
             <div class="bg-white p-5 rounded-4 text-center shadow-sm" style="border: 1px solid var(--mahlin-border);">
-                <i class="fa-regular fa-calendar-xmark fs-1 mb-3" style="color: var(--mahlin-teal);"></i>
-                <h6 class="fw-bold">هنوز نوبتی برای حساب شما ثبت نشده است.</h6>
-                <a href="/book/" class="btn-mahlin-primary mt-2">رزرو اولین نوبت</a>
+                <div class="brand-logo-circle mx-auto mb-3" style="width: 64px; height: 64px; font-size: 1.8rem;">
+                    <i class="fa-regular fa-calendar-check"></i>
+                </div>
+                <h5 class="fw-bold mb-2" style="color: var(--mahlin-navy);">هنوز نوبتی برای شما ثبت نشده است</h5>
+                <p class="text-muted small mb-4">برای ثبت اولین نوبت معاینه یا خدمات دندان‌پزشکی، روی دکمه زیر کلیک کنید.</p>
+                <a href="/book/" class="btn-mahlin-primary px-4 py-3">
+                    <i class="fa-regular fa-calendar-plus"></i> رزرو آنلاین نوبت
+                </a>
             </div>
         </div>
         {% endfor %}
     </div>
 </div>
-
-<!-- پنجره تغییر زمان نوبت -->
-<div class="modal fade" id="rescheduleModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-4 border-0">
-            <div class="modal-header border-bottom">
-                <h6 class="modal-title fw-bold">تغییر زمان نوبت <span id="reschedCode"></span></h6>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form method="POST" id="rescheduleForm">
-                {% csrf_token %}
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">انتخاب روز جدید:</label>
-                        <select name="new_date" id="reschedDateSelect" class="form-select" onchange="loadRescheduleSlots()" required></select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">انتخاب ساعت آزاد جدید:</label>
-                        <select name="new_time" id="reschedTimeSelect" class="form-select" required></select>
-                    </div>
-                </div>
-                <div class="modal-footer border-0">
-                    <button type="submit" class="btn-mahlin-primary w-100">تأیید و جابه‌جایی نوبت</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-let reschedDoctorId = null;
-let reschedApptId = null;
-
-function openRescheduleModal(apptId, docId, trackingCode) {
-    reschedApptId = apptId;
-    reschedDoctorId = docId;
-    document.getElementById('reschedCode').innerText = trackingCode;
-    document.getElementById('rescheduleForm').action = `/reschedule/${apptId}/`;
-
-    fetch(`/api/available-slots/?doctor_id=${docId}&exclude_id=${apptId}`)
-        .then(r => r.json())
-        .then(data => {
-            const dateSel = document.getElementById('reschedDateSelect');
-            dateSel.innerHTML = '';
-            data.days.forEach(d => {
-                if (d.has_free) {
-                    const opt = document.createElement('option');
-                    opt.value = d.gregorian;
-                    opt.textContent = `${d.weekday} ${d.jalali} (${d.free_count} ساعت آزاد)`;
-                    dateSel.appendChild(opt);
-                }
-            });
-            loadRescheduleSlots();
-            new bootstrap.Modal(document.getElementById('rescheduleModal')).show();
-        });
-}
-
-function loadRescheduleSlots() {
-    const selDate = document.getElementById('reschedDateSelect').value;
-    const timeSel = document.getElementById('reschedTimeSelect');
-    timeSel.innerHTML = '<option value="">در حال بررسی ظرفیت...</option>';
-
-    fetch(`/api/available-slots/?doctor_id=${reschedDoctorId}&date=${selDate}&exclude_id=${reschedApptId}`)
-        .then(r => r.json())
-        .then(data => {
-            timeSel.innerHTML = '';
-            data.slots.forEach(s => {
-                if (s.is_free) {
-                    const opt = document.createElement('option');
-                    opt.value = s.time;
-                    opt.textContent = `ساعت ${s.time} (آزاد)`;
-                    timeSel.appendChild(opt);
-                }
-            });
-        });
-}
-</script>
 {% endblock %}
