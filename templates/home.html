@@ -4,9 +4,8 @@
 
 {% block extra_css %}
 <style>
-    /* ۱. بخش ابتدایی صفحه (Hero Section) مطابق تصویر نمونه */
     .hero-wrapper {
-        padding: 24px 0 48px;
+        padding: 24px 0 36px;
     }
 
     .hero-card {
@@ -23,20 +22,36 @@
         }
     }
 
-    .hero-image-frame {
-        border-radius: 20px;
+    /* اسلایدر خودکار تصاویر بالای صفحه اصلی */
+    .hero-slider-frame {
+        border-radius: 22px;
         overflow: hidden;
-        background-color: #e6f3f1;
-        box-shadow: 0 8px 24px rgba(16, 42, 67, 0.07);
+        box-shadow: 0 10px 28px rgba(16, 42, 67, 0.1);
         aspect-ratio: 16 / 10;
         width: 100%;
+        position: relative;
     }
 
-    .hero-image-frame img {
+    .hero-slider-frame .carousel-inner,
+    .hero-slider-frame .carousel-item,
+    .hero-slider-frame img {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        display: block;
+    }
+
+    .slider-caption-pill {
+        position: absolute;
+        bottom: 14px;
+        right: 14px;
+        background: rgba(16, 42, 67, 0.82);
+        backdrop-filter: blur(6px);
+        color: #fff;
+        padding: 6px 16px;
+        border-radius: 50px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        z-index: 5;
     }
 
     .hero-kicker {
@@ -62,11 +77,62 @@
         margin-bottom: 26px;
     }
 
-    /* استایل عمومی بخش‌ها و کارت‌ها */
-    .section-spacing {
-        padding: 44px 0;
+    /* نوار فیلمی متحرک در صفحه اصلی */
+    .home-film-strip {
+        background: var(--mahlin-navy);
+        border-radius: 24px;
+        padding: 20px 0;
+        overflow: hidden;
+        margin-bottom: 24px;
+        box-shadow: 0 10px 30px rgba(16, 42, 67, 0.1);
     }
 
+    .home-film-track {
+        display: flex;
+        gap: 16px;
+        width: max-content;
+        animation: homeFilmScroll 30s linear infinite;
+        padding: 0 16px;
+    }
+
+    .home-film-track:hover {
+        animation-play-state: paused;
+    }
+
+    .home-film-card {
+        width: 260px;
+        height: 165px;
+        border-radius: 16px;
+        overflow: hidden;
+        position: relative;
+        border: 2px solid rgba(255,255,255,0.2);
+        flex-shrink: 0;
+    }
+
+    .home-film-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .home-film-label {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        background: linear-gradient(transparent, rgba(16, 42, 67, 0.9));
+        color: #fff;
+        padding: 8px 12px;
+        font-size: 0.78rem;
+        font-weight: 600;
+    }
+
+    @keyframes homeFilmScroll {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(50%); }
+    }
+
+    .section-spacing { padding: 40px 0; }
     .section-tag {
         background-color: var(--mahlin-teal-soft);
         color: var(--mahlin-teal);
@@ -113,7 +179,6 @@
         margin-bottom: 16px;
     }
 
-    /* کارت پزشکان */
     .doctor-photo-wrapper {
         width: 88px;
         height: 88px;
@@ -135,7 +200,6 @@
         object-fit: cover;
     }
 
-    /* مراحل نوبت‌دهی */
     .step-badge {
         width: 42px;
         height: 42px;
@@ -148,45 +212,47 @@
         justify-content: center;
         margin-bottom: 14px;
     }
-
-    /* آکاردئون پرسش‌های متداول */
-    .accordion-item {
-        border: 1px solid var(--mahlin-border) !important;
-        border-radius: 14px !important;
-        margin-bottom: 12px;
-        overflow: hidden;
-    }
-
-    .accordion-button {
-        font-weight: 700;
-        color: var(--mahlin-navy);
-        background-color: var(--mahlin-white);
-        padding: 18px 20px;
-    }
-
-    .accordion-button:not(.collapsed) {
-        background-color: var(--mahlin-teal-soft);
-        color: var(--mahlin-teal);
-        box-shadow: none;
-    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container">
 
-    <!-- ۱. بخش ابتدایی صفحه (Hero Section) دقیقاً مطابق تصویر ارسالی -->
+    <!-- ۱. بخش ابتدایی صفحه (Hero Section) با اسلایدر خودکار تصاویر -->
     <section class="hero-wrapper">
         <div class="hero-card">
             <div class="row align-items-center g-4 g-lg-5">
-                <!-- تصویر محیط کلینیک (در موبایل بالا، در لپ‌تاپ سمت چپ با کیفیت بالا) -->
+                <!-- اسلایدر خودکار تصاویر کلینیک -->
                 <div class="col-12 col-lg-6 order-1 order-lg-2">
-                    <div class="hero-image-frame">
-                        <img src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=1400&q=85" alt="محیط کلینیک دندان‌پزشکی ماهلین">
+                    <div id="mahlinHeroCarousel" class="carousel slide carousel-fade hero-slider-frame" data-bs-ride="carousel" data-bs-interval="3200">
+                        <div class="carousel-indicators">
+                            <button type="button" data-bs-target="#mahlinHeroCarousel" data-bs-slide-to="0" class="active"></button>
+                            <button type="button" data-bs-target="#mahlinHeroCarousel" data-bs-slide-to="1"></button>
+                            <button type="button" data-bs-target="#mahlinHeroCarousel" data-bs-slide-to="2"></button>
+                            <button type="button" data-bs-target="#mahlinHeroCarousel" data-bs-slide-to="3"></button>
+                        </div>
+                        <div class="carousel-inner">
+                            <div class="carousel-item active">
+                                <img src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=1400&q=85" alt="محیط کلینیک دندان‌پزشکی ماهلین">
+                                <span class="slider-caption-pill">محیط آرام، مدرن و کاملاً استریل</span>
+                            </div>
+                            <div class="carousel-item">
+                                <img src="https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=1400&q=85" alt="طراحی لبخند در کلینیک ماهلین">
+                                <span class="slider-caption-pill">اصلاح طرح لبخند و خدمات تخصصی زیبایی</span>
+                            </div>
+                            <div class="carousel-item">
+                                <img src="https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=1400&q=85" alt="تجهیزات پیشرفته دندان‌پزشکی">
+                                <span class="slider-caption-pill">درمان‌های دقیق و بدون درد با تجهیزات روز</span>
+                            </div>
+                            <div class="carousel-item">
+                                <img src="https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&w=1400&q=85" alt="کادر مجرب دندان‌پزشکی">
+                                <span class="slider-caption-pill">حضور دندان‌پزشکان و متخصصین باتجربه</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- متون و دکمه‌های اصلی (در موبایل وسط‌چین مشابه عکس، در دسکتاپ راست‌چین) -->
+                <!-- متون و دکمه‌های اصلی -->
                 <div class="col-12 col-lg-6 order-2 order-lg-1 text-center text-lg-end">
                     <span class="hero-kicker">مراقبت حرفه‌ای از لبخند شما</span>
                     <h1 class="hero-main-title">
@@ -210,99 +276,93 @@
         </div>
     </section>
 
-    <!-- ۲. معرفی کوتاه کلینیک -->
-    <section id="about-section" class="section-spacing">
-        <div class="clean-card p-4 p-lg-5">
-            <div class="row align-items-center g-4">
-                <div class="col-12 col-lg-7">
-                    <span class="section-tag">درباره کلینیک ماهلین</span>
-                    <h2 class="section-heading">تجربه‌ای آرام، دقیق و مطمئن از درمان‌های دندان‌پزشکی</h2>
-                    <p class="text-muted mb-0" style="line-height: 1.95;">
-                        در کلینیک دندان‌پزشکی ماهلین، اولویت ما سلامت دهان و دندان شما در فضایی به دور از استرس است. با رعایت کامل اصول بهداشتی و استریلیزاسیون، همراه با سامانه نوبت‌دهی آنلاین، تلاش کرده‌ایم تا فرآیند مراجعه و درمان برای شما شفاف، منظم و بدون اتلاف وقت باشد.
-                    </p>
-                </div>
-                <div class="col-12 col-lg-5">
-                    <div class="row g-3">
-                        <div class="col-6">
-                            <div class="p-3 rounded-4 h-100" style="background-color: var(--mahlin-bg); border: 1px solid var(--mahlin-border);">
-                                <i class="fa-solid fa-shield-heart fs-4 mb-2" style="color: var(--mahlin-teal);"></i>
-                                <h6 class="fw-bold mb-1" style="color: var(--mahlin-navy);">محیط کاملاً استریل</h6>
-                                <small class="text-muted">رعایت دقیق استانداردهای بهداشتی</small>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="p-3 rounded-4 h-100" style="background-color: var(--mahlin-bg); border: 1px solid var(--mahlin-border);">
-                                <i class="fa-regular fa-clock fs-4 mb-2" style="color: var(--mahlin-teal);"></i>
-                                <h6 class="fw-bold mb-1" style="color: var(--mahlin-navy);">نوبت‌دهی منظم</h6>
-                                <small class="text-muted">انتخاب آنلاین پزشک و ساعت مراجعه</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <!-- ۲. نوار فیلمی متحرک تصاویر دندان‌پزشکی -->
+    <div class="home-film-strip" dir="ltr">
+        <div class="home-film-track">
+            <div class="home-film-card">
+                <img src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=600&q=80" alt="کلینیک ماهلین">
+                <div class="home-film-label" dir="rtl">یونیت‌های پیشرفته درمانی</div>
+            </div>
+            <div class="home-film-card">
+                <img src="https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=600&q=80" alt="طرح لبخند">
+                <div class="home-film-label" dir="rtl">زیبایی و طراحی لبخند</div>
+            </div>
+            <div class="home-film-card">
+                <img src="https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=600&q=80" alt="معاینه تخصصی">
+                <div class="home-film-label" dir="rtl">معاینه و تشخیص دیجیتال</div>
+            </div>
+            <div class="home-film-card">
+                <img src="https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&w=600&q=80" alt="ایمپلنت دندان">
+                <div class="home-film-label" dir="rtl">کاشت تخصصی ایمپلنت</div>
+            </div>
+            <div class="home-film-card">
+                <img src="https://images.unsplash.com/photo-1609840114035-3c981b782dfe?auto=format&fit=crop&w=600&q=80" alt="اتاق استریل">
+                <div class="home-film-label" dir="rtl">پروتکل‌های استریل بیمارستانی</div>
+            </div>
+            <!-- تکرار جهت حرکت پیوسته -->
+            <div class="home-film-card">
+                <img src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=600&q=80" alt="کلینیک ماهلین">
+                <div class="home-film-label" dir="rtl">یونیت‌های پیشرفته درمانی</div>
+            </div>
+            <div class="home-film-card">
+                <img src="https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=600&q=80" alt="طرح لبخند">
+                <div class="home-film-label" dir="rtl">زیبایی و طراحی لبخند</div>
+            </div>
+            <div class="home-film-card">
+                <img src="https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=600&q=80" alt="معاینه تخصصی">
+                <div class="home-film-label" dir="rtl">معاینه و تشخیص دیجیتال</div>
+            </div>
+            <div class="home-film-card">
+                <img src="https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&w=600&q=80" alt="ایمپلنت دندان">
+                <div class="home-film-label" dir="rtl">کاشت تخصصی ایمپلنت</div>
+            </div>
+            <div class="home-film-card">
+                <img src="https://images.unsplash.com/photo-1609840114035-3c981b782dfe?auto=format&fit=crop&w=600&q=80" alt="اتاق استریل">
+                <div class="home-film-label" dir="rtl">پروتکل‌های استریل بیمارستانی</div>
             </div>
         </div>
-    </section>
+    </div>
 
-    <!-- ۳. نمایش خدمات کلینیک در قالب کارت‌های زیبا -->
+    <!-- ۳. نمایش خدمات کلینیک -->
     <section id="services-section" class="section-spacing">
         <div class="text-center mb-4">
             <span class="section-tag">خدمات درمانی و زیبایی</span>
             <h2 class="section-heading">خدمات کلینیک دندان‌پزشکی ماهلین</h2>
-            <p class="text-muted mb-0">ارائه خدمات تخصصی و عمومی دندان‌پزشکی متناسب با طرح درمان هر مراجعه‌کننده</p>
         </div>
 
         <div class="row g-4">
             <div class="col-12 col-md-6 col-lg-3">
                 <div class="clean-card">
-                    <div class="service-icon-box">
-                        <i class="fa-solid fa-tooth"></i>
-                    </div>
+                    <div class="service-icon-box"><i class="fa-solid fa-tooth"></i></div>
                     <h5 class="fw-bold mb-2" style="color: var(--mahlin-navy);">معاینه و ترمیم دندان</h5>
-                    <p class="small text-muted mb-0">
-                        تشخیص دقیق پوسیدگی‌ها و ترمیم تخصصی دندان با مواد هم‌رنگ و باکیفیت.
-                    </p>
+                    <p class="small text-muted mb-0">تشخیص دقیق پوسیدگی‌ها و ترمیم تخصصی دندان با مواد هم‌رنگ و باکیفیت.</p>
                 </div>
             </div>
-
             <div class="col-12 col-md-6 col-lg-3">
                 <div class="clean-card">
-                    <div class="service-icon-box">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i>
-                    </div>
+                    <div class="service-icon-box"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
                     <h5 class="fw-bold mb-2" style="color: var(--mahlin-navy);">خدمات زیبایی و لبخند</h5>
-                    <p class="small text-muted mb-0">
-                        اصلاح فرم و رنگ دندان‌ها، کامپوزیت ونیر، لمینت سرامیکی و جرم‌گیری حرفه‌ای.
-                    </p>
+                    <p class="small text-muted mb-0">اصلاح فرم و رنگ دندان‌ها، کامپوزیت ونیر، لمینت سرامیکی و جرم‌گیری حرفه‌ای.</p>
                 </div>
             </div>
-
             <div class="col-12 col-md-6 col-lg-3">
                 <div class="clean-card">
-                    <div class="service-icon-box">
-                        <i class="fa-solid fa-screwdriver-wrench"></i>
-                    </div>
+                    <div class="service-icon-box"><i class="fa-solid fa-screwdriver-wrench"></i></div>
                     <h5 class="fw-bold mb-2" style="color: var(--mahlin-navy);">درمان ریشه (عصب‌کشی)</h5>
-                    <p class="small text-muted mb-0">
-                        درمان تخصصی ریشه دندان‌های آسیب‌دیده با تجهیزات دقیق و حداقل درد.
-                    </p>
+                    <p class="small text-muted mb-0">درمان تخصصی ریشه دندان‌های آسیب‌دیده با تجهیزات دقیق و حداقل درد.</p>
                 </div>
             </div>
-
             <div class="col-12 col-md-6 col-lg-3">
                 <div class="clean-card">
-                    <div class="service-icon-box">
-                        <i class="fa-solid fa-kit-medical"></i>
-                    </div>
+                    <div class="service-icon-box"><i class="fa-solid fa-kit-medical"></i></div>
                     <h5 class="fw-bold mb-2" style="color: var(--mahlin-navy);">جراحی و ایمپلنت</h5>
-                    <p class="small text-muted mb-0">
-                        جایگزینی دندان‌های از دست رفته و جراحی‌های تخصصی دهان و دندان.
-                    </p>
+                    <p class="small text-muted mb-0">جایگزینی دندان‌های از دست رفته و جراحی‌های تخصصی دهان و دندان.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- ۴. نمایش پزشکان واقعی از دیتابیس پروژه -->
+    <!-- ۴. نمایش پزشکان واقعی از دیتابیس -->
     <section id="doctors-section" class="section-spacing">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-4 gap-2">
             <div>
@@ -336,42 +396,9 @@
                     </div>
 
                     <div class="d-flex gap-2 mt-2">
-                        <button type="button" class="btn-mahlin-outline flex-grow-1 py-2" style="font-size: 0.9rem;" data-bs-toggle="modal" data-bs-target="#doctorModal{{ doctor.id }}">
-                            مشاهده پروفایل
-                        </button>
-                        <a href="/book/" class="btn-mahlin-primary flex-grow-1 py-2" style="font-size: 0.9rem;">
-                            رزرو نوبت
+                        <a href="/book/" class="btn-mahlin-primary flex-grow-1 py-2">
+                            <i class="fa-regular fa-calendar-check"></i> رزرو نوبت با این پزشک
                         </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- پنجره پروفایل اختصاصی پزشک (متصل به اطلاعات واقعی دیتابیس) -->
-            <div class="modal fade" id="doctorModal{{ doctor.id }}" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content border-0 rounded-4 overflow-hidden">
-                        <div class="modal-header border-bottom" style="background-color: var(--mahlin-bg);">
-                            <h6 class="modal-title fw-bold" style="color: var(--mahlin-navy);">پروفایل پزشک</h6>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="بستن"></button>
-                        </div>
-                        <div class="modal-body p-4 text-center">
-                            <div class="doctor-photo-wrapper mx-auto mb-3" style="width: 100px; height: 100px;">
-                                {% if doctor.profile_image %}
-                                    <img src="{{ doctor.profile_image.url }}" alt="{{ doctor.name }}">
-                                {% else %}
-                                    <i class="fa-solid fa-user-doctor"></i>
-                                {% endif %}
-                            </div>
-                            <h5 class="fw-bold mb-1" style="color: var(--mahlin-navy);">{{ doctor.name }}</h5>
-                            <p class="mb-3" style="color: var(--mahlin-teal); font-weight: 600;">{{ doctor.specialty }}</p>
-                            <div class="p-3 rounded-3 text-end small mb-3" style="background-color: var(--mahlin-bg); border: 1px solid var(--mahlin-border);">
-                                <div class="mb-1"><strong>مرکز فعالیت:</strong> کلینیک دندان‌پزشکی ماهلین</div>
-                                <div><strong>وضعیت پذیرش:</strong> فعال (امکان اخذ نوبت آنلاین)</div>
-                            </div>
-                            <a href="/book/" class="btn-mahlin-primary w-100">
-                                <i class="fa-regular fa-calendar-check"></i> رزرو نوبت با {{ doctor.name }}
-                            </a>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -380,188 +407,10 @@
                 <div class="clean-card text-center py-5">
                     <i class="fa-solid fa-user-doctor fs-1 mb-3" style="color: var(--mahlin-teal);"></i>
                     <h6 class="fw-bold" style="color: var(--mahlin-navy);">در حال حاضر پزشکی در سامانه ثبت نشده است</h6>
-                    <p class="small text-muted mb-0">مشخصات پزشکان پس از ثبت در پنل مدیریت کلینیک، به صورت خودکار در این بخش نمایش داده می‌شود.</p>
+                    <p class="small text-muted mb-0">پزشکان پس از ثبت در پنل مدیریت کلینیک، به صورت خودکار در این بخش نمایش داده می‌شوند.</p>
                 </div>
             </div>
             {% endfor %}
-        </div>
-    </section>
-
-    <!-- ۵. مراحل رزرو نوبت در سامانه -->
-    <section id="steps-section" class="section-spacing">
-        <div class="text-center mb-4">
-            <span class="section-tag">فرآیند نوبت‌دهی</span>
-            <h2 class="section-heading">مراحل رزرو آنلاین نوبت</h2>
-            <p class="text-muted mb-0">تنها در سه گام ساده نوبت ملاقات خود را در کلینیک ماهلین ثبت کنید</p>
-        </div>
-
-        <div class="row g-4">
-            <div class="col-12 col-md-4">
-                <div class="clean-card">
-                    <span class="step-badge">۱</span>
-                    <h5 class="fw-bold mb-2" style="color: var(--mahlin-navy);">ورود با شماره موبایل</h5>
-                    <p class="small text-muted mb-0">
-                        روی دکمه «رزرو نوبت» کلیک کرده و شماره موبایل خود را وارد کنید تا وارد حساب کاربری خود شوید.
-                    </p>
-                </div>
-            </div>
-            <div class="col-12 col-md-4">
-                <div class="clean-card">
-                    <span class="step-badge">۲</span>
-                    <h5 class="fw-bold mb-2" style="color: var(--mahlin-navy);">انتخاب پزشک، تاریخ و ساعت</h5>
-                    <p class="small text-muted mb-0">
-                        پزشک مورد نظر، تاریخ شمسی و ساعت دلخواه خود را از میان زمان‌های آزاد انتخاب نمایید.
-                    </p>
-                </div>
-            </div>
-            <div class="col-12 col-md-4">
-                <div class="clean-card">
-                    <span class="step-badge">۳</span>
-                    <h5 class="fw-bold mb-2" style="color: var(--mahlin-navy);">ثبت نهایی و پیگیری از پنل</h5>
-                    <p class="small text-muted mb-0">
-                        نوبت شما بلافاصله ثبت شده و در پنل کاربری بیمار و پنل اختصاصی پزشک قابل مشاهده و مدیریت است.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ۶. بخش نظرات واقعی بیماران (بدون هیچ داده ساختگی) -->
-    <section id="reviews-section" class="section-spacing">
-        <div class="text-center mb-4">
-            <span class="section-tag">دیدگاه مراجعین</span>
-            <h2 class="section-heading">نظرات بیماران کلینیک</h2>
-        </div>
-
-        {% if reviews %}
-            <div class="row g-4">
-                {% for review in reviews %}
-                <div class="col-12 col-md-6 col-lg-4">
-                    <div class="clean-card">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="fw-bold" style="color: var(--mahlin-navy);">{{ review.patient_name }}</span>
-                            <span class="badge rounded-pill" style="background-color: var(--mahlin-teal-soft); color: var(--mahlin-teal);">
-                                امتیاز: {{ review.rating }} از ۵
-                            </span>
-                        </div>
-                        <p class="small text-muted mb-0">{{ review.comment }}</p>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="clean-card text-center py-4">
-                <i class="fa-regular fa-comments fs-2 mb-2" style="color: var(--mahlin-teal);"></i>
-                <h6 class="fw-bold mb-1" style="color: var(--mahlin-navy);">محل نمایش دیدگاه‌های ثبت‌شده مراجعین</h6>
-                <p class="small text-muted mb-0">
-                    تمامی نظرات واقعی مراجعین پس از ثبت و تایید در سامانه، بدون هیچ‌گونه دخل و تصرف در این بخش نمایش داده می‌شوند.
-                </p>
-            </div>
-        {% endif %}
-    </section>
-
-    <!-- ۷. پرسش‌های متداول (FAQ) -->
-    <section id="faq-section" class="section-spacing">
-        <div class="row justify-content-center">
-            <div class="col-12 col-lg-9">
-                <div class="text-center mb-4">
-                    <span class="section-tag">پاسخ به سوالات شما</span>
-                    <h2 class="section-heading">پرسش‌های متداول</h2>
-                </div>
-
-                <div class="accordion" id="mahlinFaq">
-                    <div class="accordion-item">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
-                                چگونه می‌توانم در کلینیک ماهلین نوبت بگیرم؟
-                            </button>
-                        </h2>
-                        <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#mahlinFaq">
-                            <div class="accordion-body small text-muted">
-                                کافی است روی دکمه «رزرو نوبت» در بالای صفحه کلیک کنید، با شماره همراه خود وارد شوید و پس از انتخاب پزشک، تاریخ و ساعت مراجعه، نوبت خود را ثبت نمایید.
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="accordion-item">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
-                                آیا امکان مشاهده یا لغو نوبت ثبت‌شده وجود دارد؟
-                            </button>
-                        </h2>
-                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#mahlinFaq">
-                            <div class="accordion-body small text-muted">
-                                بله؛ پس از ورود به حساب کاربری خود (بخش پنل کاربری)، فهرست تمام نوبت‌های ثبت‌شده شما به همراه وضعیت تایید و دکمه لغو نوبت در دسترس است.
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="accordion-item">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
-                                آیا سیستم از ثبت دو نوبت هم‌زمان برای یک پزشک جلوگیری می‌کند؟
-                            </button>
-                        </h2>
-                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#mahlinFaq">
-                            <div class="accordion-body small text-muted">
-                                بله؛ سامانه نوبت‌دهی کلینیک ماهلین به صورت خودکار ساعت‌های رزرو شده هر پزشک را بررسی کرده و اجازه ثبت نوبت تکراری در یک زمان واحد را نمی‌دهد.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ۸. اطلاعات تماس، ساعات کاری و مسیر دسترسی -->
-    <section id="contact-section" class="section-spacing">
-        <div class="clean-card p-4 p-lg-5">
-            <div class="row g-4 align-items-center">
-                <div class="col-12 col-lg-7">
-                    <span class="section-tag">راه‌های ارتباطی</span>
-                    <h2 class="section-heading">اطلاعات تماس و ساعات کاری کلینیک</h2>
-                    <p class="text-muted mb-4">
-                        برای مراجعه حضوری یا هماهنگی نوبت‌ها می‌توانید در ساعات کاری کلینیک با ما در ارتباط باشید.
-                    </p>
-
-                    <div class="row g-3">
-                        <div class="col-12 col-sm-6">
-                            <div class="d-flex align-items-start gap-3">
-                                <span class="service-icon-box mb-0" style="width: 44px; height: 44px; font-size: 1.1rem;">
-                                    <i class="fa-regular fa-clock"></i>
-                                </span>
-                                <div>
-                                    <h6 class="fw-bold mb-1" style="color: var(--mahlin-navy);">ساعات کاری</h6>
-                                    <p class="small text-muted mb-0">شنبه تا چهارشنبه: ۰۹:۰۰ الی ۲۰:۰۰<br>پنج‌شنبه‌ها: ۰۹:۰۰ الی ۱۴:۰۰</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-sm-6">
-                            <div class="d-flex align-items-start gap-3">
-                                <span class="service-icon-box mb-0" style="width: 44px; height: 44px; font-size: 1.1rem;">
-                                    <i class="fa-solid fa-location-dot"></i>
-                                </span>
-                                <div>
-                                    <h6 class="fw-bold mb-1" style="color: var(--mahlin-navy);">نشانی و دسترسی</h6>
-                                    <p class="small text-muted mb-0">کلینیک تخصصی دندان‌پزشکی ماهلین<br>دسترسی آسان با وسائل نقلیه عمومی و شخصی</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-12 col-lg-5 text-center">
-                    <div class="p-4 rounded-4" style="background-color: var(--mahlin-teal-soft); border: 1px solid var(--mahlin-border);">
-                        <i class="fa-solid fa-calendar-check fs-1 mb-3" style="color: var(--mahlin-teal);"></i>
-                        <h5 class="fw-bold mb-2" style="color: var(--mahlin-navy);">آماده رزرو نوبت هستید؟</h5>
-                        <p class="small text-muted mb-3">همین حالا بدون نیاز به تماس تلفنی، نوبت خود را به صورت آنلاین ثبت کنید.</p>
-                        <a href="/book/" class="btn-mahlin-primary w-100">
-                            <i class="fa-regular fa-calendar-check"></i> شروع رزرو نوبت آنلاین
-                        </a>
-                    </div>
-                </div>
-            </div>
         </div>
     </section>
 
