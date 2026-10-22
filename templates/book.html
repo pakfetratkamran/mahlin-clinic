@@ -12,7 +12,6 @@
         box-shadow: 0 12px 36px rgba(16, 42, 67, 0.06);
     }
 
-    /* دکمه‌های انتخاب بالا (پزشک، روز، ساعت) */
     .choice-grid {
         display: flex;
         flex-wrap: wrap;
@@ -68,18 +67,18 @@
         justify-content: center;
     }
 
-    /* نوار فیلمی متحرک عکس‌های دندان‌پزشکی در پایین صفحه */
+    /* نوار فیلمی متحرک عکس‌های دندان‌پزشکی در پایین دکمه‌ها */
     .cinema-section {
-        margin-top: 36px;
+        margin-top: 32px;
         background: var(--mahlin-navy);
         border-radius: 24px;
-        padding: 24px 0;
+        padding: 22px 0;
         overflow: hidden;
         position: relative;
         box-shadow: 0 14px 34px rgba(16, 42, 67, 0.15);
     }
 
-    .film- perforation {
+    .film-perforation {
         height: 10px;
         background-image: repeating-linear-gradient(to left, rgba(255,255,255,0.22) 0, rgba(255,255,255,0.22) 18px, transparent 18px, transparent 36px);
         margin: 8px 0;
@@ -89,7 +88,7 @@
         display: flex;
         gap: 18px;
         width: max-content;
-        animation: scrollFilm 32s linear infinite;
+        animation: scrollFilm 30s linear infinite;
         padding: 10px 18px;
     }
 
@@ -98,8 +97,8 @@
     }
 
     .film-frame {
-        width: 290px;
-        height: 185px;
+        width: 280px;
+        height: 180px;
         border-radius: 16px;
         overflow: hidden;
         position: relative;
@@ -111,11 +110,6 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
-        transition: transform 0.4s ease;
-    }
-
-    .film-frame:hover img {
-        transform: scale(1.07);
     }
 
     .film-caption {
@@ -123,7 +117,7 @@
         bottom: 0;
         right: 0;
         left: 0;
-        background: linear-gradient(transparent, rgba(16, 42, 67, 0.88));
+        background: linear-gradient(transparent, rgba(16, 42, 67, 0.9));
         color: #fff;
         padding: 10px 14px 8px;
         font-size: 0.82rem;
@@ -140,7 +134,7 @@
 {% block content %}
 <div class="container py-4">
 
-    <!-- بخش بالایی: تمام دکمه‌های انتخاب نوبت در یک قاب یکپارچه -->
+    <!-- بخش بالا: تمام دکمه‌های انتخاب نوبت -->
     <div class="booking-panel">
         <div class="d-flex flex-wrap justify-content-between align-items-center border-bottom pb-3 mb-4 gap-2">
             <div class="d-flex align-items-center gap-3">
@@ -148,103 +142,84 @@
                     <i class="fa-regular fa-calendar-check"></i>
                 </span>
                 <div>
-                    <h4 class="fw-bold mb-0" style="color: var(--mahlin-navy);">رزرو آنلاین نوبت معاینه و درمان</h4>
-                    <small class="text-muted">با کلیک روی دکمه‌های زیر، پزشک، روز و ساعت دلخواه خود را انتخاب کنید</small>
+                    <h4 class="fw-bold mb-0" style="color: var(--mahlin-navy);">رزرو آنلاین نوبت معاینه</h4>
+                    <small class="text-muted">پزشک، روز و ساعت مراجعه را با کلیک روی دکمه‌های زیر انتخاب کنید</small>
                 </div>
             </div>
             <a href="/patient-panel/" class="btn-mahlin-outline py-2 px-3" style="font-size: 0.88rem;">
-                <i class="fa-solid fa-list-check"></i> مشاهده نوبت‌های من
+                <i class="fa-solid fa-list-check"></i> نوبت‌های من
             </a>
         </div>
 
-        {% if messages %}
-            {% for message in messages %}
-            <div class="alert alert-warning rounded-3 small mb-3">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-
         {% if form.errors %}
         <div class="alert alert-danger rounded-3 small mb-3">
-            <i class="fa-solid fa-triangle-exclamation ms-1"></i>
-            لطفاً موارد زیر را بررسی کنید:
             {% for field, errors in form.errors.items %}
                 {% for err in errors %}<div>• {{ err }}</div>{% endfor %}
             {% endfor %}
         </div>
         {% endif %}
 
-        <form method="POST" id="quickBookForm">
+        <form method="POST">
             {% csrf_token %}
-            <!-- فیلدهای مخفی متصل به بک‌اند -->
             <input type="hidden" name="doctor" id="selectedDoctorInput" required>
             <input type="hidden" name="date" id="selectedDateInput" required>
             <input type="hidden" name="time" id="selectedTimeInput" required>
 
-            <!-- ۱. دکمه‌های انتخاب پزشک -->
+            <!-- ۱. انتخاب پزشک -->
             <div class="mb-4">
-                <div class="step-title">
-                    <span class="step-num">۱</span> انتخاب پزشک معالج:
-                </div>
-                <div class="choice-grid" id="doctorButtonsBox">
+                <div class="step-title"><span class="step-num">۱</span> انتخاب پزشک:</div>
+                <div class="choice-grid">
                     {% if doctors %}
                         {% for doc in doctors %}
-                        <button type="button" class="choice-btn doc-btn" data-id="{{ doc.id }}" onclick="pickDoctor('{{ doc.id }}', this)">
-                            <i class="fa-solid fa-user-doctor"></i>
-                            <span>{{ doc.name }} ({{ doc.specialty }})</span>
+                        <button type="button" class="choice-btn doc-btn" onclick="pickDoctor('{{ doc.id }}', this)">
+                            <i class="fa-solid fa-user-doctor"></i> {{ doc.name }} ({{ doc.specialty }})
                         </button>
                         {% endfor %}
                     {% elif form.doctor %}
                         {% for doc in form.doctor.field.queryset %}
-                        <button type="button" class="choice-btn doc-btn" data-id="{{ doc.id }}" onclick="pickDoctor('{{ doc.id }}', this)">
-                            <i class="fa-solid fa-user-doctor"></i>
-                            <span>{{ doc.name }} ({{ doc.specialty }})</span>
+                        <button type="button" class="choice-btn doc-btn" onclick="pickDoctor('{{ doc.id }}', this)">
+                            <i class="fa-solid fa-user-doctor"></i> {{ doc.name }} ({{ doc.specialty }})
                         </button>
                         {% empty %}
-                        <div class="text-danger small">هنوز پزشکی در پنل مدیریت ثبت یا فعال نشده است.</div>
+                        <div class="text-danger small">لطفاً ابتدا از پنل مدیریت حداقل یک پزشک اضافه کنید.</div>
                         {% endfor %}
                     {% endif %}
                 </div>
             </div>
 
-            <!-- ۲. دکمه‌های انتخاب روز مراجعه (محاسبه خودکار تاریخ شمسی روزهای آینده) -->
+            <!-- ۲. انتخاب روز -->
             <div class="mb-4">
-                <div class="step-title">
-                    <span class="step-num">۲</span> انتخاب روز مراجعه:
-                </div>
+                <div class="step-title"><span class="step-num">۲</span> انتخاب روز مراجعه:</div>
                 <div class="choice-grid" id="dayButtonsBox"></div>
             </div>
 
-            <!-- ۳. دکمه‌های انتخاب ساعت ویزیت -->
+            <!-- ۳. انتخاب ساعت -->
             <div class="mb-4">
-                <div class="step-title">
-                    <span class="step-num">۳</span> انتخاب ساعت مراجعه:
-                </div>
-                <div class="choice-grid" id="timeButtonsBox">
-                    <button type="button" class="choice-btn time-btn" onclick="pickTime('09:00', this)"><i class="fa-regular fa-clock"></i> ۰۹:۰۰ صبح</button>
-                    <button type="button" class="choice-btn time-btn" onclick="pickTime('10:00', this)"><i class="fa-regular fa-clock"></i> ۱۰:۰۰ صبح</button>
-                    <button type="button" class="choice-btn time-btn" onclick="pickTime('11:00', this)"><i class="fa-regular fa-clock"></i> ۱۱:۰۰ ظهر</button>
-                    <button type="button" class="choice-btn time-btn" onclick="pickTime('12:00', this)"><i class="fa-regular fa-clock"></i> ۱۲:۰۰ ظهر</button>
-                    <button type="button" class="choice-btn time-btn" onclick="pickTime('16:00', this)"><i class="fa-regular fa-clock"></i> ۱۶:۰۰ عصر</button>
-                    <button type="button" class="choice-btn time-btn" onclick="pickTime('17:00', this)"><i class="fa-regular fa-clock"></i> ۱۷:۰۰ عصر</button>
-                    <button type="button" class="choice-btn time-btn" onclick="pickTime('18:00', this)"><i class="fa-regular fa-clock"></i> ۱۸:۰۰ عصر</button>
-                    <button type="button" class="choice-btn time-btn" onclick="pickTime('19:00', this)"><i class="fa-regular fa-clock"></i> ۱۹:۰۰ شب</button>
-                    <button type="button" class="choice-btn time-btn" onclick="pickTime('20:00', this)"><i class="fa-regular fa-clock"></i> ۲۰:۰۰ شب</button>
+                <div class="step-title"><span class="step-num">۳</span> انتخاب ساعت ویزیت:</div>
+                <div class="choice-grid">
+                    <button type="button" class="choice-btn time-btn" onclick="pickTime('09:00', this)">۰۹:۰۰ صبح</button>
+                    <button type="button" class="choice-btn time-btn" onclick="pickTime('10:00', this)">۱۰:۰۰ صبح</button>
+                    <button type="button" class="choice-btn time-btn" onclick="pickTime('11:00', this)">۱۱:۰۰ ظهر</button>
+                    <button type="button" class="choice-btn time-btn" onclick="pickTime('12:00', this)">۱۲:۰۰ ظهر</button>
+                    <button type="button" class="choice-btn time-btn" onclick="pickTime('16:00', this)">۱۶:۰۰ عصر</button>
+                    <button type="button" class="choice-btn time-btn" onclick="pickTime('17:00', this)">۱۷:۰۰ عصر</button>
+                    <button type="button" class="choice-btn time-btn" onclick="pickTime('18:00', this)">۱۸:۰۰ عصر</button>
+                    <button type="button" class="choice-btn time-btn" onclick="pickTime('19:00', this)">۱۹:۰۰ شب</button>
+                    <button type="button" class="choice-btn time-btn" onclick="pickTime('20:00', this)">۲۰:۰۰ شب</button>
                 </div>
             </div>
 
-            <!-- ۴. مشخصات بیمار و دکمه ثبت نهایی -->
+            <!-- ۴. مشخصات بیمار -->
             <div class="p-3 p-md-4 rounded-4" style="background: var(--mahlin-bg); border: 1px solid var(--mahlin-border);">
-                <div class="step-title mb-3">
-                    <span class="step-num">۴</span> مشخصات بیمار و ثبت نهایی:
-                </div>
+                <div class="step-title mb-3"><span class="step-num">۴</span> مشخصات بیمار و ثبت نوبت:</div>
                 <div class="row g-3 align-items-end">
                     <div class="col-12 col-md-5">
                         <label class="form-label small fw-bold">نام و نام خانوادگی بیمار</label>
-                        <input type="text" name="name" value="{{ patient.name|default:'' }}" class="form-control form-control-lg fs-6 rounded-3" placeholder="مثلاً: علی رضایی" required>
+                        <input type="text" name="name" class="form-control form-control-lg fs-6 rounded-3" placeholder="نام کامل بیمار" required>
                     </div>
                     <div class="col-12 col-md-4">
                         <label class="form-label small fw-bold">کد ملی (۱۰ رقم)</label>
-                        <input type="text" name="national_id" value="{{ patient.national_id|default:'' }}" maxlength="10" pattern="\d{10}" class="form-control form-control-lg fs-6 rounded-3" placeholder="۱۰ رقم بدون خط تیره" required>
+                        <input type="text" name="national_id" maxlength="10" pattern="\d{10}" class="form-control form-control-lg fs-6 rounded-3" placeholder="۱۰ رقم بدون خط تیره" required>
                     </div>
                     <div class="col-12 col-md-3 d-grid">
                         <button type="submit" class="btn-mahlin-primary py-3">
@@ -256,60 +231,56 @@
         </form>
     </div>
 
-    <!-- بخش پایینی: گالری فیلمی متحرک از محیط و خدمات دندان‌پزشکی -->
+    <!-- بخش پایین: رد شدن فیلمی عکس‌های دندان‌پزشکی -->
     <div class="cinema-section">
         <div class="px-4 mb-2 d-flex justify-content-between align-items-center text-white">
-            <span class="fw-bold small"><i class="fa-solid fa-film ms-2 text-info"></i>گالری محیط و تجهیزات مدرن کلینیک دندان‌پزشکی ماهلین</span>
+            <span class="fw-bold small"><i class="fa-solid fa-film ms-2 text-info"></i>محیط و خدمات تخصصی کلینیک دندان‌پزشکی ماهلین</span>
             <span class="small opacity-75">لبخندی سالم، حسی ماندگار</span>
         </div>
         <div class="film-perforation"></div>
-
         <div class="film-track" dir="ltr">
-            <!-- سری اول تصاویر -->
             <div class="film-frame">
-                <img src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=700&q=80" alt="یونیت دندان‌پزشکی مدرن">
-                <div class="film-caption" dir="rtl">اتاق‌های درمان VIP و کاملاً استریل</div>
+                <img src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=700&q=80" alt="کلینیک ماهلین">
+                <div class="film-caption" dir="rtl">اتاق‌های درمان مجهز و استریل</div>
             </div>
             <div class="film-frame">
                 <img src="https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=700&q=80" alt="اصلاح طرح لبخند">
-                <div class="film-caption" dir="rtl">طراحی دیجیتال لبخند و لمینت سرامیکی</div>
+                <div class="film-caption" dir="rtl">اصلاح طرح لبخند و لمینت سرامیکی</div>
             </div>
             <div class="film-frame">
-                <img src="https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=700&q=80" alt="معاینه تخصصی دندان">
-                <div class="film-caption" dir="rtl">معاینه دقیق با تجهیزات تصویربرداری پیشرفته</div>
+                <img src="https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=700&q=80" alt="معاینه دندان">
+                <div class="film-caption" dir="rtl">معاینه دقیق با تجهیزات دیجیتال</div>
             </div>
             <div class="film-frame">
-                <img src="https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&w=700&q=80" alt="ایمپلنت و جراحی">
-                <div class="film-caption" dir="rtl">کاشت ایمپلنت بدون درد با متد دیجیتال</div>
+                <img src="https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&w=700&q=80" alt="ایمپلنت">
+                <div class="film-caption" dir="rtl">کاشت تخصصی ایمپلنت بدون درد</div>
             </div>
             <div class="film-frame">
-                <img src="https://images.unsplash.com/photo-1609840114035-3c981b782dfe?auto=format&fit=crop&w=700&q=80" alt="تجهیزات دندانپزشکی">
-                <div class="film-caption" dir="rtl">استریلیزاسیون چندمرحله‌ای ابزارهای درمانی</div>
+                <img src="https://images.unsplash.com/photo-1609840114035-3c981b782dfe?auto=format&fit=crop&w=700&q=80" alt="تجهیزات مدرن">
+                <div class="film-caption" dir="rtl">استریلیزاسیون پیشرفته ابزارها</div>
             </div>
-
-            <!-- تکرار تصاویر برای حرکت بی‌نهایت و بدون وقفه فیلمی -->
+            <!-- تکرار برای حرکت پیوسته -->
             <div class="film-frame">
-                <img src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=700&q=80" alt="یونیت دندان‌پزشکی مدرن">
-                <div class="film-caption" dir="rtl">اتاق‌های درمان VIP و کاملاً استریل</div>
+                <img src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=700&q=80" alt="کلینیک ماهلین">
+                <div class="film-caption" dir="rtl">اتاق‌های درمان مجهز و استریل</div>
             </div>
             <div class="film-frame">
                 <img src="https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=700&q=80" alt="اصلاح طرح لبخند">
-                <div class="film-caption" dir="rtl">طراحی دیجیتال لبخند و لمینت سرامیکی</div>
+                <div class="film-caption" dir="rtl">اصلاح طرح لبخند و لمینت سرامیکی</div>
             </div>
             <div class="film-frame">
-                <img src="https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=700&q=80" alt="معاینه تخصصی دندان">
-                <div class="film-caption" dir="rtl">معاینه دقیق با تجهیزات تصویربرداری پیشرفته</div>
+                <img src="https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=700&q=80" alt="معاینه دندان">
+                <div class="film-caption" dir="rtl">معاینه دقیق با تجهیزات دیجیتال</div>
             </div>
             <div class="film-frame">
-                <img src="https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&w=700&q=80" alt="ایمپلنت و جراحی">
-                <div class="film-caption" dir="rtl">کاشت ایمپلنت بدون درد با متد دیجیتال</div>
+                <img src="https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&w=700&q=80" alt="ایمپلنت">
+                <div class="film-caption" dir="rtl">کاشت تخصصی ایمپلنت بدون درد</div>
             </div>
             <div class="film-frame">
-                <img src="https://images.unsplash.com/photo-1609840114035-3c981b782dfe?auto=format&fit=crop&w=700&q=80" alt="تجهیزات دندانپزشکی">
-                <div class="film-caption" dir="rtl">استریلیزاسیون چندمرحله‌ای ابزارهای درمانی</div>
+                <img src="https://images.unsplash.com/photo-1609840114035-3c981b782dfe?auto=format&fit=crop&w=700&q=80" alt="تجهیزات مدرن">
+                <div class="film-caption" dir="rtl">استریلیزاسیون پیشرفته ابزارها</div>
             </div>
         </div>
-
         <div class="film-perforation"></div>
     </div>
 
@@ -323,52 +294,39 @@ function pickDoctor(id, btn) {
     document.querySelectorAll('.doc-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
 }
-
 function pickDate(shamsiStr, btn) {
     document.getElementById('selectedDateInput').value = shamsiStr;
     document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
 }
-
 function pickTime(timeStr, btn) {
     document.getElementById('selectedTimeInput').value = timeStr;
     document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
 }
-
-// تولید خودکار دکمه‌های ۱۰ روز آینده به تقویم شمسی دقیق
 document.addEventListener('DOMContentLoaded', function() {
     const dayBox = document.getElementById('dayButtonsBox');
     const fmtDate = new Intl.DateTimeFormat('fa-IR-u-nu-latn', { year: 'numeric', month: '2-digit', day: '2-digit' });
     const fmtWeekday = new Intl.DateTimeFormat('fa-IR', { weekday: 'long' });
-
-    let firstDaySelected = false;
+    let firstSelected = false;
     for (let i = 0; i < 10; i++) {
         const d = new Date();
         d.setDate(d.getDate() + i);
-        const weekdayName = fmtWeekday.format(d);
-        if (weekdayName === 'جمعه') continue; // حذف جمعه‌ها
-
-        const shamsiDate = fmtDate.format(d); // فرمت دقیق 1405/08/01
+        const wName = fmtWeekday.format(d);
+        if (wName === 'جمعه') continue;
+        const sDate = fmtDate.format(d);
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'choice-btn day-btn';
-        btn.innerHTML = `<i class="fa-regular fa-calendar"></i> <span>${weekdayName} (${shamsiDate})</span>`;
-        btn.onclick = function() { pickDate(shamsiDate, btn); };
+        btn.innerHTML = `<i class="fa-regular fa-calendar"></i> ${wName} (${sDate})`;
+        btn.onclick = function() { pickDate(sDate, btn); };
         dayBox.appendChild(btn);
-
-        if (!firstDaySelected) {
-            pickDate(shamsiDate, btn);
-            firstDaySelected = true;
-        }
+        if (!firstSelected) { pickDate(sDate, btn); firstSelected = true; }
     }
-
-    // انتخاب پیش‌فرض اولین پزشک و اولین ساعت برای راحتی کاربر
-    const firstDoc = document.querySelector('.doc-btn');
-    if (firstDoc) firstDoc.click();
-
-    const firstTime = document.querySelector('.time-btn');
-    if (firstTime) firstTime.click();
+    const fDoc = document.querySelector('.doc-btn');
+    if (fDoc) fDoc.click();
+    const fTime = document.querySelector('.time-btn');
+    if (fTime) fTime.click();
 });
 </script>
 {% endblock %}
