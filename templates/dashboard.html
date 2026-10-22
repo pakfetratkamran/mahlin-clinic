@@ -4,7 +4,6 @@
 
 {% block content %}
 <div class="container py-4">
-    <!-- هدر پنل بیمار -->
     <div class="bg-white p-4 rounded-4 shadow-sm mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3" style="border: 1px solid var(--mahlin-border);">
         <div>
             <h4 class="fw-bold mb-1" style="color: var(--mahlin-navy);">
@@ -30,7 +29,6 @@
         {% endfor %}
     {% endif %}
 
-    <!-- فهرست نوبت‌های بیمار -->
     <div class="row g-4">
         {% for appt in appointments %}
         <div class="col-12 col-lg-6">
@@ -44,9 +42,7 @@
                             </span>
                         </div>
                         <div>
-                            {% if appt.status == 'canceled' %}
-                                <span class="badge bg-danger px-3 py-2 rounded-pill">لغوشده</span>
-                            {% elif appt.is_confirmed or appt.status == 'confirmed' %}
+                            {% if appt.is_confirmed %}
                                 <span class="badge bg-success px-3 py-2 rounded-pill">تأییدشده</span>
                             {% else %}
                                 <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">در انتظار تأیید</span>
@@ -68,22 +64,16 @@
                                 <span class="text-muted">ساعت ویزیت:</span>
                                 <strong class="d-block text-dark">{{ appt.time|time:"H:i"|default:appt.time }}</strong>
                             </div>
-                            <div class="col-6">
-                                <span class="text-muted">وضعیت نوبت:</span>
-                                <strong class="d-block" style="color: var(--mahlin-teal);">ثبت‌شده در سامانه</strong>
-                            </div>
                         </div>
                     </div>
                 </div>
 
-                {% if appt.status != 'canceled' %}
                 <div class="d-flex justify-content-end border-top pt-3">
                     <a href="/cancel/{{ appt.id }}/" class="btn btn-sm btn-outline-danger rounded-3 px-3 py-2 fw-bold"
                        onclick="return confirm('آیا از لغو این نوبت مطمئن هستید؟');">
-                        <i class="fa-solid fa-trash-can ms-1"></i> لغو این نوبت
+                        <i class="fa-solid fa-trash-can ms-1"></i> لغو نوبت
                     </a>
                 </div>
-                {% endif %}
             </div>
         </div>
         {% empty %}
