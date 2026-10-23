@@ -6,62 +6,94 @@
 <div class="container py-4">
     <div class="bg-white p-4 rounded-4 shadow-sm mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3" style="border: 1px solid var(--mahlin-border);">
         <div>
-            <h4 class="fw-bold mb-1" style="color: var(--mahlin-navy);">پنل کاربری من</h4>
-            <p class="small text-muted mb-0">شماره حساب: <strong dir="ltr">{{ request.user.username }}</strong></p>
+            <h4 class="fw-bold mb-1" style="color: var(--mahlin-navy);">
+                <i class="fa-solid fa-hospital-user ms-2" style="color: var(--mahlin-teal);"></i>پنل کاربری و نوبت‌های من
+            </h4>
+            <p class="small text-muted mb-0">شماره حساب کاربری: <strong dir="ltr">{{ request.user.username }}</strong></p>
         </div>
         <div class="d-flex gap-2">
-            <a href="{% url 'book' %}" class="btn-mahlin-primary py-2 px-4">
-                دریافت نوبت جدید
+            <a href="/book/" class="btn-mahlin-primary py-2 px-4">
+                <i class="fa-regular fa-calendar-plus"></i> دریافت نوبت جدید
             </a>
-            <form method="post" action="{% url 'logout' %}" class="d-inline">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-outline-danger rounded-3 py-2 px-3 fw-bold">
-                    خروج
-                </button>
-            </form>
+            <a href="/logout/" class="btn btn-outline-danger rounded-3 py-2 px-3 fw-bold">
+                <i class="fa-solid fa-power-off ms-1"></i> خروج
+            </a>
         </div>
     </div>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-success rounded-4 border-0 shadow-sm mb-4">
+            {{ message }}
+        </div>
+        {% endfor %}
+    {% endif %}
 
     <div class="row g-4">
         {% for appt in appointments %}
         <div class="col-12 col-lg-6">
-            <div class="bg-white p-4 rounded-4 h-100 shadow-sm" style="border: 1px solid var(--mahlin-border);">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                        <h5 class="fw-bold mb-1" style="color: var(--mahlin-navy);">{{ appt.doctor.name }}</h5>
-                        <span class="badge rounded-pill px-3 py-1" style="background: var(--mahlin-teal-soft); color: var(--mahlin-teal);">
-                            {{ appt.doctor.specialty }}
-                        </span>
+            <div class="bg-white p-4 rounded-4 h-100 shadow-sm d-flex flex-column justify-content-between" style="border: 1px solid var(--mahlin-border);">
+                <div>
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <span class="badge bg-dark rounded-pill px-3 py-1 mb-2">کد پیگیری: {{ appt.tracking_code|default:appt.id }}</span>
+                            <h5 class="fw-bold mb-1" style="color: var(--mahlin-navy);">{{ appt.doctor.name }}</h5>
+                            <span class="badge rounded-pill px-3 py-1" style="background: var(--mahlin-teal-soft); color: var(--mahlin-teal);">
+                                {{ appt.doctor.specialty }}
+                            </span>
+                        </div>
+                        <div>
+                            {% if appt.status == 'canceled' %}
+                                <span class="badge bg-danger px-3 py-2 rounded-pill">لغوشده</span>
+                            {% elif appt.is_confirmed or appt.status == 'confirmed' %}
+                                <span class="badge bg-success px-3 py-2 rounded-pill">تأییدشده</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">در انتظار تأیید</span>
+                            {% endif %}
+                        </div>
                     </div>
-                    {% if appt.is_confirmed %}
-                        <span class="badge bg-success px-3 py-2 rounded-pill">تأییدشده</span>
-                    {% else %}
-                        <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">در انتظار تأیید</span>
-                    {% endif %}
+
+                    <div class="p-3 rounded-3 mb-3 small" style="background-color: var(--mahlin-bg); border: 1px solid var(--mahlin-border);">
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <span class="text-muted">نام بیمار:</span>
+                                <strong class="d-block text-dark">{{ appt.patient.name }}</strong>
+                            </div>
+                            <div class="col-6">
+                                <span class="text-muted">تاریخ مراجعه:</span>
+                                <strong class="d-block text-dark">{{ appt.jalali_date|default:appt.date }}</strong>
+                            </div>
+                            <div class="col-6">
+                                <span class="text-muted">ساعت ویزیت:</span>
+                                <strong class="d-block text-dark">{{ appt.time|time:"H:i"|default:appt.time }}</strong>
+                            </div>
+                            <div class="col-6">
+                                <span class="text-muted">وضعیت نوبت:</span>
+                                <strong class="d-block" style="color: var(--mahlin-teal);">ثبت‌شده در سامانه</strong>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="p-3 rounded-3 mb-3 small" style="background-color: var(--mahlin-bg);">
-                    <div><strong>بیمار:</strong> {{ appt.patient.name }}</div>
-                    <div><strong>تاریخ:</strong> {{ appt.jalali_date|default:appt.date }}</div>
-                    <div><strong>ساعت:</strong> {{ appt.time|time:"H:i" }}</div>
-                </div>
-
-                <div class="text-end">
-                    <form method="post" action="{% url 'cancel' appt.id %}" class="d-inline"
-                          onsubmit="return confirm('آیا از لغو این نوبت مطمئن هستید؟');">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-3 px-3">
-                            لغو نوبت
-                        </button>
-                    </form>
+                <div class="d-flex justify-content-end border-top pt-3">
+                    <a href="/cancel/{{ appt.id }}/" class="btn btn-sm btn-outline-danger rounded-3 px-3 py-2 fw-bold"
+                       onclick="return confirm('آیا از لغو این نوبت مطمئن هستید؟');">
+                        <i class="fa-solid fa-trash-can ms-1"></i> لغو نوبت
+                    </a>
                 </div>
             </div>
         </div>
         {% empty %}
         <div class="col-12">
             <div class="bg-white p-5 rounded-4 text-center shadow-sm" style="border: 1px solid var(--mahlin-border);">
-                <h6 class="fw-bold mb-3" style="color: var(--mahlin-navy);">نوبتی ثبت نشده است</h6>
-                <a href="{% url 'book' %}" class="btn-mahlin-primary px-4 py-2">دریافت نوبت جدید</a>
+                <div class="brand-logo-circle mx-auto mb-3" style="width: 64px; height: 64px; font-size: 1.8rem;">
+                    <i class="fa-regular fa-calendar-check"></i>
+                </div>
+                <h5 class="fw-bold mb-2" style="color: var(--mahlin-navy);">هنوز نوبتی برای شما ثبت نشده است</h5>
+                <p class="text-muted small mb-4">برای ثبت نوبت معاینه یا خدمات دندان‌پزشکی، روی دکمه زیر کلیک کنید.</p>
+                <a href="/book/" class="btn-mahlin-primary px-4 py-3">
+                    <i class="fa-regular fa-calendar-plus"></i> دریافت نوبت جدید
+                </a>
             </div>
         </div>
         {% endfor %}
