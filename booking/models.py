@@ -15,13 +15,8 @@ class Doctor(models.Model):
     phone = models.CharField(max_length=15, verbose_name="شماره تماس")
     profile_image = models.ImageField(upload_to='doctors/', null=True, blank=True, verbose_name="عکس پروفایل")
     bio = models.TextField(blank=True, null=True, default="", verbose_name="سوابق و توضیحات")
-    working_days = models.CharField(max_length=150, default="شنبه تا چهارشنبه", verbose_name="عنوان روزهای حضور")
-    working_hours = models.CharField(max_length=100, default="۰۹:۰۰ تا ۲۰:۰۰", verbose_name="عنوان ساعات حضور")
-    # فیلدهای ساختاریافته برای محاسبه دقیق تقویم و ساعت‌های آزاد
-    work_days_mask = models.CharField(max_length=30, default="0,1,2,3,4", verbose_name="روزهای کاری هفته (0=شنبه تا 6=جمعه)")
-    work_start = models.CharField(max_length=5, default="09:00", verbose_name="ساعت شروع کار (HH:MM)")
-    work_end = models.CharField(max_length=5, default="20:00", verbose_name="ساعت پایان کار (HH:MM)")
-    slot_duration = models.PositiveIntegerField(default=30, verbose_name="مدت هر نوبت (دقیقه)")
+    working_days = models.CharField(max_length=150, default="شنبه تا چهارشنبه", verbose_name="روزهای حضور")
+    working_hours = models.CharField(max_length=100, default="۰۹:۰۰ تا ۲۰:۰۰", verbose_name="ساعات حضور")
     is_active = models.BooleanField(default=True, verbose_name="فعال در سایت؟")
 
     def __str__(self):
@@ -32,29 +27,11 @@ class Doctor(models.Model):
         verbose_name_plural = "پزشکان"
 
 
-class DoctorTimeOff(models.Model):
-    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name='time_offs', verbose_name="پزشک")
-    date = models.DateField(verbose_name="تاریخ عدم حضور / مرخصی")
-    is_full_day = models.BooleanField(default=True, verbose_name="مرخصی کامل روزانه؟")
-    start_time = models.TimeField(null=True, blank=True, verbose_name="ساعت شروع مسدودسازی")
-    end_time = models.TimeField(null=True, blank=True, verbose_name="ساعت پایان مسدودسازی")
-    reason = models.CharField(max_length=200, blank=True, default="مرخصی / عدم حضور پزشک", verbose_name="علت")
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.doctor.name} - {self.date}"
-
-    class Meta:
-        verbose_name = "مرخصی و زمان مسدود پزشک"
-        verbose_name_plural = "مرخصی‌ها و زمان‌های مسدود پزشکان"
-        ordering = ['-date']
-
-
 class Patient(models.Model):
     name = models.CharField(max_length=100, verbose_name="نام و نام خانوادگی")
     national_id = models.CharField(max_length=10, unique=True, verbose_name="کد ملی")
     phone = models.CharField(max_length=15, verbose_name="شماره موبایل")
-    medical_notes = models.TextField(blank=True, null=True, default="", verbose_name="پرونده و سوابق پزشکی (محرمانه)")
+    medical_notes = models.TextField(blank=True, null=True, default="", verbose_name="پرونده پزشکی")
 
     def __str__(self):
         return self.name
@@ -70,31 +47,19 @@ class Appointment(models.Model):
         ('confirmed', 'تأییدشده'),
         ('completed', 'تکمیل‌شده'),
         ('canceled', 'لغوشده'),
-        ('no_show', 'عدم مراجعه'),
-    ]
-
-    SMS_STATUS_CHOICES = [
-        ('not_configured', 'سرویس پیامک پیکربندی نشده'),
-        ('sent', 'ارسال‌شده'),
-        ('failed', 'خطا در ارسال پیامک'),
     ]
 
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, verbose_name="بیمار")
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, verbose_name="پزشک")
     date = models.DateField(verbose_name="تاریخ نوبت")
-    time = models.TimeField(verbose_name="ساعت شروع نوبت")
-    end_time = models.TimeField(null=True, blank=True, verbose_name="ساعت پایان نوبت")
+    time = models.TimeField(verbose_name="ساعت نوبت")
     tracking_code = models.CharField(max_length=20, default=generate_tracking_code, verbose_name="کد پیگیری")
     is_confirmed = models.BooleanField(default=False, verbose_name="تایید شده؟")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name="وضعیت")
-    cancel_reason = models.CharField(max_length=255, blank=True, null=True, default="", verbose_name="دلیل لغو / توضیحات")
-    doctor_note = models.TextField(blank=True, null=True, default="", verbose_name="یادداشت درمانی پزشک")
-    sms_status = models.CharField(max_length=30, choices=SMS_STATUS_CHOICES, default='not_configured', verbose_name="وضعیت پیامک")
-    history_log = models.TextField(blank=True, null=True, default="", verbose_name="تاریخچه تغییرات نوبت")
-    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    cancel_reason = models.CharField(max_length=255, blank=True, null=True, default="", verbose_name="توضیحات")
 
     def __str__(self):
-        return f"{self.tracking_code} | {self.patient.name} - {self.doctor.name} ({self.date} {self.time})"
+        return f"{self.patient.name} - {self.doctor.name} - {self.date} {self.time}"
 
     class Meta:
         verbose_name = "نوبت"
@@ -111,10 +76,6 @@ class OTPRequest(models.Model):
         self.save()
         return self.code
 
-    class Meta:
-        verbose_name = "کد تایید"
-        verbose_name_plural = "کدهای تایید"
-
 
 class StaffProfile(models.Model):
     ROLE_CHOICES = [
@@ -122,37 +83,30 @@ class StaffProfile(models.Model):
         ('receptionist', 'منشی / پذیرش'),
         ('doctor', 'پزشک'),
     ]
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='staff_profile', verbose_name="حساب کاربری")
-    full_name = models.CharField(max_length=100, verbose_name="نام و نام خانوادگی")
-    phone = models.CharField(max_length=15, unique=True, verbose_name="شماره همراه / کد کاربری")
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='receptionist', verbose_name="نقش سازمانی")
-    is_active = models.BooleanField(default=True, verbose_name="وضعیت حساب")
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='staff_profile')
+    full_name = models.CharField(max_length=100)
+    phone = models.CharField(max_length=15, unique=True)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='receptionist')
+    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.full_name} ({self.get_role_display()})"
 
 
 class ClinicSettings(models.Model):
-    clinic_name = models.CharField(max_length=120, default="کلینیک دندان‌پزشکی ماهلین", verbose_name="نام کلینیک")
-    slogan = models.CharField(max_length=150, default="لبخندی سالم، حسی ماندگار", verbose_name="شعار کلینیک")
-    phone = models.CharField(max_length=50, default="۰۲۱-۰۰۰۰۰۰۰۰", verbose_name="شماره تماس کلینیک")
-    address = models.TextField(default="تهران، کلینیک تخصصی دندان‌پزشکی ماهلین", verbose_name="آدرس کلینیک")
-    map_link = models.CharField(max_length=300, blank=True, default="", verbose_name="لینک مسیریابی")
-    working_hours = models.CharField(max_length=200, default="شنبه تا چهارشنبه: ۰۹:۰۰ الی ۲۰:۰۰ | پنج‌شنبه‌ها: ۰۹:۰۰ الی ۱۴:۰۰", verbose_name="ساعات کاری")
-    holidays_notice = models.CharField(max_length=250, blank=True, default="جمعه‌ها و تعطیلات رسمی کلینیک تعطیل است.", verbose_name="اطلاعیه تعطیلات")
-    booking_rules = models.TextField(default="لطفاً ۱۵ دقیقه پیش از زمان نوبت در کلینیک حضور داشته باشید. لغو یا تغییر نوبت تا ۲ ساعت پیش از زمان ویزیت امکان‌پذیر است.", verbose_name="قوانین عمومی نوبت‌دهی")
-    default_slot_duration = models.PositiveIntegerField(default=30, verbose_name="مدت پیش‌فرض هر نوبت (دقیقه)")
-
-    def __str__(self):
-        return self.clinic_name
+    clinic_name = models.CharField(max_length=120, default="کلینیک دندان‌پزشکی ماهلین")
+    slogan = models.CharField(max_length=150, default="لبخندی سالم، حسی ماندگار")
+    phone = models.CharField(max_length=50, default="۰۲۱-۰۰۰۰۰۰۰۰")
+    address = models.TextField(default="کلینیک تخصصی دندان‌پزشکی ماهلین")
+    map_link = models.CharField(max_length=300, blank=True, default="")
+    working_hours = models.CharField(max_length=200, default="شنبه تا چهارشنبه: ۰۹:۰۰ الی ۲۰:۰۰ | پنج‌شنبه‌ها: ۰۹:۰۰ الی ۱۴:۰۰")
+    holidays_notice = models.CharField(max_length=250, blank=True, default="جمعه‌ها و تعطیلات رسمی کلینیک تعطیل است.")
+    booking_rules = models.TextField(default="لطفاً ۱۵ دقیقه پیش از زمان نوبت در کلینیک حضور داشته باشید.")
 
 
 class AuditLog(models.Model):
-    actor = models.CharField(max_length=100, verbose_name="انجام‌دهنده")
-    action_type = models.CharField(max_length=80, verbose_name="نوع عملیات")
-    details = models.TextField(verbose_name="جزئیات رویداد")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="زمان ثبت")
+    actor = models.CharField(max_length=100)
+    action_type = models.CharField(max_length=80)
+    details = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-created_at']
