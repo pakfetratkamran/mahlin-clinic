@@ -4,10 +4,7 @@
 
 {% block extra_css %}
 <style>
-    .hero-wrapper {
-        padding: 24px 0 36px;
-    }
-
+    .hero-wrapper { padding: 24px 0 36px; }
     .hero-card {
         background-color: var(--mahlin-white);
         border: 1px solid var(--mahlin-border);
@@ -15,14 +12,8 @@
         padding: 22px;
         box-shadow: 0 12px 36px rgba(16, 42, 67, 0.05);
     }
+    @media (min-width: 992px) { .hero-card { padding: 44px; } }
 
-    @media (min-width: 992px) {
-        .hero-card {
-            padding: 44px;
-        }
-    }
-
-    /* اسلایدر خودکار تصاویر بالای صفحه اصلی */
     .hero-slider-frame {
         border-radius: 22px;
         overflow: hidden;
@@ -31,7 +22,6 @@
         width: 100%;
         position: relative;
     }
-
     .hero-slider-frame .carousel-inner,
     .hero-slider-frame .carousel-item,
     .hero-slider-frame img {
@@ -54,30 +44,10 @@
         z-index: 5;
     }
 
-    .hero-kicker {
-        color: var(--mahlin-teal);
-        font-weight: 700;
-        font-size: 0.95rem;
-        margin-bottom: 10px;
-        display: inline-block;
-    }
+    .hero-kicker { color: var(--mahlin-teal); font-weight: 700; font-size: 0.95rem; margin-bottom: 10px; display: inline-block; }
+    .hero-main-title { color: var(--mahlin-navy); font-weight: 900; font-size: clamp(1.65rem, 3.2vw, 2.55rem); line-height: 1.45; margin-bottom: 14px; }
+    .hero-subtitle { color: var(--mahlin-muted); font-size: 1rem; line-height: 1.85; margin-bottom: 26px; }
 
-    .hero-main-title {
-        color: var(--mahlin-navy);
-        font-weight: 900;
-        font-size: clamp(1.65rem, 3.2vw, 2.55rem);
-        line-height: 1.45;
-        margin-bottom: 14px;
-    }
-
-    .hero-subtitle {
-        color: var(--mahlin-muted);
-        font-size: 1rem;
-        line-height: 1.85;
-        margin-bottom: 26px;
-    }
-
-    /* نوار فیلمی متحرک در صفحه اصلی */
     .home-film-strip {
         background: var(--mahlin-navy);
         border-radius: 24px;
@@ -86,7 +56,6 @@
         margin-bottom: 24px;
         box-shadow: 0 10px 30px rgba(16, 42, 67, 0.1);
     }
-
     .home-film-track {
         display: flex;
         gap: 16px;
@@ -94,11 +63,7 @@
         animation: homeFilmScroll 30s linear infinite;
         padding: 0 16px;
     }
-
-    .home-film-track:hover {
-        animation-play-state: paused;
-    }
-
+    .home-film-track:hover { animation-play-state: paused; }
     .home-film-card {
         width: 260px;
         height: 165px;
@@ -108,160 +73,61 @@
         border: 2px solid rgba(255,255,255,0.2);
         flex-shrink: 0;
     }
-
-    .home-film-card img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
+    .home-film-card img { width: 100%; height: 100%; object-fit: cover; }
     .home-film-label {
         position: absolute;
-        bottom: 0;
-        right: 0;
-        left: 0;
+        bottom: 0; right: 0; left: 0;
         background: linear-gradient(transparent, rgba(16, 42, 67, 0.9));
         color: #fff;
         padding: 8px 12px;
         font-size: 0.78rem;
         font-weight: 600;
     }
-
     @keyframes homeFilmScroll {
         0% { transform: translateX(0); }
         100% { transform: translateX(50%); }
     }
 
     .section-spacing { padding: 40px 0; }
-    .section-tag {
-        background-color: var(--mahlin-teal-soft);
-        color: var(--mahlin-teal);
-        font-weight: 700;
-        font-size: 0.82rem;
-        padding: 6px 16px;
-        border-radius: 50px;
-        display: inline-block;
-        margin-bottom: 10px;
-    }
-
-    .section-heading {
-        color: var(--mahlin-navy);
-        font-weight: 800;
-        font-size: clamp(1.35rem, 2.3vw, 1.85rem);
-        margin-bottom: 12px;
-    }
-
-    .clean-card {
-        background-color: var(--mahlin-white);
-        border: 1px solid var(--mahlin-border);
-        border-radius: var(--radius-lg);
-        padding: 24px;
-        height: 100%;
-        box-shadow: 0 6px 20px rgba(16, 42, 67, 0.03);
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
-    }
-
-    .clean-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 28px rgba(16, 42, 67, 0.08);
-    }
-
-    .service-icon-box {
-        width: 54px;
-        height: 54px;
-        border-radius: 16px;
-        background-color: var(--mahlin-teal-soft);
-        color: var(--mahlin-teal);
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.4rem;
-        margin-bottom: 16px;
-    }
-
-    .doctor-photo-wrapper {
-        width: 88px;
-        height: 88px;
-        border-radius: 50%;
-        overflow: hidden;
-        border: 3px solid var(--mahlin-teal-soft);
-        background-color: var(--mahlin-teal-soft);
-        flex-shrink: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--mahlin-teal);
-        font-size: 2rem;
-    }
-
-    .doctor-photo-wrapper img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .step-badge {
-        width: 42px;
-        height: 42px;
-        border-radius: 12px;
-        background-color: var(--mahlin-teal);
-        color: var(--mahlin-white);
-        font-weight: 800;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 14px;
-    }
+    .section-tag { background-color: var(--mahlin-teal-soft); color: var(--mahlin-teal); font-weight: 700; font-size: 0.82rem; padding: 6px 16px; border-radius: 50px; display: inline-block; margin-bottom: 10px; }
+    .section-heading { color: var(--mahlin-navy); font-weight: 800; font-size: clamp(1.35rem, 2.3vw, 1.85rem); margin-bottom: 12px; }
+    .clean-card { background-color: var(--mahlin-white); border: 1px solid var(--mahlin-border); border-radius: var(--radius-lg); padding: 24px; height: 100%; box-shadow: 0 6px 20px rgba(16, 42, 67, 0.03); }
+    .service-icon-box { width: 54px; height: 54px; border-radius: 16px; background-color: var(--mahlin-teal-soft); color: var(--mahlin-teal); display: inline-flex; align-items: center; justify-content: center; font-size: 1.4rem; margin-bottom: 16px; }
+    .doctor-photo-wrapper { width: 88px; height: 88px; border-radius: 50%; overflow: hidden; border: 3px solid var(--mahlin-teal-soft); background-color: var(--mahlin-teal-soft); flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: var(--mahlin-teal); font-size: 2rem; }
+    .doctor-photo-wrapper img { width: 100%; height: 100%; object-fit: cover; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container">
 
-    <!-- ۱. بخش ابتدایی صفحه (Hero Section) با اسلایدر خودکار تصاویر -->
+    <!-- ۱. بخش ابتدایی با تغییر خودکار عکس‌ها -->
     <section class="hero-wrapper">
         <div class="hero-card">
             <div class="row align-items-center g-4 g-lg-5">
-                <!-- اسلایدر خودکار تصاویر کلینیک -->
                 <div class="col-12 col-lg-6 order-1 order-lg-2">
-                    <div id="mahlinHeroCarousel" class="carousel slide carousel-fade hero-slider-frame" data-bs-ride="carousel" data-bs-interval="3200">
-                        <div class="carousel-indicators">
-                            <button type="button" data-bs-target="#mahlinHeroCarousel" data-bs-slide-to="0" class="active"></button>
-                            <button type="button" data-bs-target="#mahlinHeroCarousel" data-bs-slide-to="1"></button>
-                            <button type="button" data-bs-target="#mahlinHeroCarousel" data-bs-slide-to="2"></button>
-                            <button type="button" data-bs-target="#mahlinHeroCarousel" data-bs-slide-to="3"></button>
-                        </div>
+                    <div id="mahlinHeroCarousel" class="carousel slide carousel-fade hero-slider-frame" data-bs-ride="carousel" data-bs-interval="3000">
                         <div class="carousel-inner">
                             <div class="carousel-item active">
-                                <img src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=1400&q=85" alt="محیط کلینیک دندان‌پزشکی ماهلین">
+                                <img src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=1400&q=85" alt="کلینیک ماهلین">
                                 <span class="slider-caption-pill">محیط آرام، مدرن و کاملاً استریل</span>
                             </div>
                             <div class="carousel-item">
-                                <img src="https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=1400&q=85" alt="طراحی لبخند در کلینیک ماهلین">
+                                <img src="https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=1400&q=85" alt="طراحی لبخند">
                                 <span class="slider-caption-pill">اصلاح طرح لبخند و خدمات تخصصی زیبایی</span>
                             </div>
                             <div class="carousel-item">
-                                <img src="https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=1400&q=85" alt="تجهیزات پیشرفته دندان‌پزشکی">
+                                <img src="https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=1400&q=85" alt="تجهیزات دندان‌پزشکی">
                                 <span class="slider-caption-pill">درمان‌های دقیق و بدون درد با تجهیزات روز</span>
-                            </div>
-                            <div class="carousel-item">
-                                <img src="https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&w=1400&q=85" alt="کادر مجرب دندان‌پزشکی">
-                                <span class="slider-caption-pill">حضور دندان‌پزشکان و متخصصین باتجربه</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- متون و دکمه‌های اصلی -->
                 <div class="col-12 col-lg-6 order-2 order-lg-1 text-center text-lg-end">
                     <span class="hero-kicker">مراقبت حرفه‌ای از لبخند شما</span>
-                    <h1 class="hero-main-title">
-                        لبخند زیبای شما، از اینجا شروع می‌شود
-                    </h1>
-                    <p class="hero-subtitle">
-                        خدمات دندان‌پزشکی متناسب با نیاز شما، در محیطی آرام و حرفه‌ای.
-                    </p>
-
+                    <h1 class="hero-main-title">لبخند زیبای شما، از اینجا شروع می‌شود</h1>
+                    <p class="hero-subtitle">خدمات دندان‌پزشکی متناسب با نیاز شما، در محیطی آرام و حرفه‌ای.</p>
                     <div class="d-grid d-sm-flex justify-content-center justify-content-lg-start gap-3">
                         <a href="/book/" class="btn-mahlin-primary">
                             <i class="fa-regular fa-calendar-check"></i>
@@ -276,7 +142,7 @@
         </div>
     </section>
 
-    <!-- ۲. نوار فیلمی متحرک تصاویر دندان‌پزشکی -->
+    <!-- ۲. نوار فیلمی متحرک عکس‌ها در صفحه اصلی -->
     <div class="home-film-strip" dir="ltr">
         <div class="home-film-track">
             <div class="home-film-card">
@@ -299,7 +165,7 @@
                 <img src="https://images.unsplash.com/photo-1609840114035-3c981b782dfe?auto=format&fit=crop&w=600&q=80" alt="اتاق استریل">
                 <div class="home-film-label" dir="rtl">پروتکل‌های استریل بیمارستانی</div>
             </div>
-            <!-- تکرار جهت حرکت پیوسته -->
+            <!-- تکرار برای حرکت پیوسته -->
             <div class="home-film-card">
                 <img src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=600&q=80" alt="کلینیک ماهلین">
                 <div class="home-film-label" dir="rtl">یونیت‌های پیشرفته درمانی</div>
@@ -323,13 +189,12 @@
         </div>
     </div>
 
-    <!-- ۳. نمایش خدمات کلینیک -->
+    <!-- ۳. خدمات کلینیک -->
     <section id="services-section" class="section-spacing">
         <div class="text-center mb-4">
             <span class="section-tag">خدمات درمانی و زیبایی</span>
             <h2 class="section-heading">خدمات کلینیک دندان‌پزشکی ماهلین</h2>
         </div>
-
         <div class="row g-4">
             <div class="col-12 col-md-6 col-lg-3">
                 <div class="clean-card">
@@ -362,13 +227,12 @@
         </div>
     </section>
 
-    <!-- ۴. نمایش پزشکان واقعی از دیتابیس -->
+    <!-- ۴. پزشکان کلینیک -->
     <section id="doctors-section" class="section-spacing">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-4 gap-2">
             <div>
                 <span class="section-tag">کادر درمان</span>
                 <h2 class="section-heading mb-1">پزشکان کلینیک ماهلین</h2>
-                <p class="text-muted mb-0">پزشک مورد نظر خود را انتخاب کرده و زمان مراجعه را رزرو نمایید</p>
             </div>
             <a href="/book/" class="btn-mahlin-primary py-2 px-4">
                 <i class="fa-regular fa-calendar-check"></i> ورود به صفحه رزرو نوبت
@@ -382,7 +246,7 @@
                     <div class="d-flex align-items-center gap-3 mb-4">
                         <div class="doctor-photo-wrapper">
                             {% if doctor.profile_image %}
-                                <img src="{{ doctor.profile_image.url }}" alt="{{ doctor.name }}" loading="lazy">
+                                <img src="{{ doctor.profile_image.url }}" alt="{{ doctor.name }}">
                             {% else %}
                                 <i class="fa-solid fa-user-doctor"></i>
                             {% endif %}
@@ -394,20 +258,13 @@
                             </span>
                         </div>
                     </div>
-
-                    <div class="d-flex gap-2 mt-2">
-                        <a href="/book/" class="btn-mahlin-primary flex-grow-1 py-2">
-                            <i class="fa-regular fa-calendar-check"></i> رزرو نوبت با این پزشک
-                        </a>
-                    </div>
+                    <a href="/book/" class="btn-mahlin-primary w-100 py-2">رزرو نوبت با این پزشک</a>
                 </div>
             </div>
             {% empty %}
             <div class="col-12">
                 <div class="clean-card text-center py-5">
-                    <i class="fa-solid fa-user-doctor fs-1 mb-3" style="color: var(--mahlin-teal);"></i>
-                    <h6 class="fw-bold" style="color: var(--mahlin-navy);">در حال حاضر پزشکی در سامانه ثبت نشده است</h6>
-                    <p class="small text-muted mb-0">پزشکان پس از ثبت در پنل مدیریت کلینیک، به صورت خودکار در این بخش نمایش داده می‌شوند.</p>
+                    <h6 class="fw-bold" style="color: var(--mahlin-navy);">در حال حاضر پزشکی ثبت نشده است</h6>
                 </div>
             </div>
             {% endfor %}
